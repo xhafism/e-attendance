@@ -5,9 +5,11 @@ import { updateSettingsAction } from "@/app/actions";
 import { Plus, Trash2, Save } from "lucide-react";
 import { MapView } from "./MapView";
 
+import { GeofenceLocation } from "@/lib/types";
+
 export function SettingsForm({ initialSettings }: { initialSettings: Record<string, string> }) {
   const [geofenceEnabled, setGeofenceEnabled] = useState(initialSettings.geofence_enabled === "true");
-  const [locations, setLocations] = useState<Array<{ lat: number, lng: number, radius: number, name: string }>>(() => {
+  const [locations, setLocations] = useState<GeofenceLocation[]>(() => {
     try {
       return initialSettings.geofence_locations ? JSON.parse(initialSettings.geofence_locations) : [];
     } catch {
