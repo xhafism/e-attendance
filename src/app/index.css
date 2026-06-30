@@ -3,20 +3,20 @@
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  /* Modern Vibrant Colors */
+  /* Square UI Theme Colors (Minimalist Monochrome) */
   --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-tertiary: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f4f4f5;
   
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-primary: #18181b;
+  --text-secondary: #52525b;
+  --text-muted: #a1a1aa;
   
-  --border-color: #e2e8f0;
+  --border-color: #e4e4e7;
   
-  --primary-color: #6366f1; /* Indigo */
-  --primary-hover: #4f46e5;
-  --primary-light: #e0e7ff;
+  --primary-color: #18181b; /* Almost Black */
+  --primary-hover: #3f3f46;
+  --primary-light: #f4f4f5;
   
   --danger-color: #ef4444;
   --danger-hover: #dc2626;
@@ -33,18 +33,18 @@
   /* Typography */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   
-  /* Modern Border Radius */
-  --radius-sm: 8px;
-  --radius: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  /* Square UI Border Radius (0.625rem) */
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
   --radius-full: 9999px;
   
-  /* Smooth Shadows */
+  /* Smooth Shadows - Square UI prefers borders and subtle shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
-  --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 * {
@@ -131,9 +131,9 @@ a:hover {
   justify-content: center;
   padding: 0.6rem 1.25rem;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1.25rem;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -156,12 +156,12 @@ a:hover {
 .btn-primary {
   background-color: var(--primary-color);
   color: #fff;
-  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover:not(:disabled) {
   background-color: var(--primary-hover);
-  box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+  box-shadow: var(--shadow);
 }
 
 .btn-secondary {
@@ -391,12 +391,10 @@ tbody tr:hover {
 }
 
 .logo-text {
-  font-weight: 800;
+  font-weight: 700;
   font-size: 1.25rem;
   letter-spacing: -0.025em;
-  background: linear-gradient(135deg, var(--primary-color), #a855f7);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
 }
 
 .sidebar-nav {
@@ -456,16 +454,16 @@ tbody tr:hover {
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--primary-color), #a855f7);
-  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  box-shadow: var(--shadow-sm);
+  font-size: 0.875rem;
 }
 
 .user-info {
@@ -526,10 +524,8 @@ tbody tr:hover {
 }
 
 .page-title {
-  margin: 0;
-  font-size: 1.25rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  color: var(--text-primary);
 }
 
 /* Login Page */
@@ -538,20 +534,19 @@ tbody tr:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--bg-secondary);
-  background-image: radial-gradient(circle at top right, #e0e7ff, transparent 40%), radial-gradient(circle at bottom left, #fce7f3, transparent 40%);
+  background-color: var(--bg-tertiary);
   padding: 1.5rem;
 }
 
 .login-card {
   width: 100%;
-  max-width: 440px;
-  padding: 3rem 2.5rem;
-  text-align: center;
-  background-color: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  max-width: 400px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  padding: 2.5rem 2rem;
   box-shadow: var(--shadow-lg);
+  text-align: center;
 }
 
 .login-header {
