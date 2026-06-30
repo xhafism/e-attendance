@@ -1,12 +1,15 @@
 import { requireUser } from "@/lib/auth";
-import { getUserAttendanceToday, getSettings } from "@/lib/store";
+import { getUserAttendanceToday, getSettings, getGeofenceSettings, getUserStats } from "@/lib/store";
 import ClockWidget from "@/components/ClockWidget";
 import { ClockoutReminder } from "@/components/ClockoutReminder";
+import { MapView } from "@/components/MapView";
 
 export default async function DashboardPage() {
   const user = await requireUser();
   const todayLogs = await getUserAttendanceToday(user.id);
   const settings = await getSettings();
+  const geofenceConfig = await getGeofenceSettings();
+  const myStats = await getUserStats(user.id);
 
   // Determine clock state for the reminder
   let clockState: "idle" | "working" | "on_break" = "idle";
@@ -30,6 +33,19 @@ export default async function DashboardPage() {
     }
   };
 
+  // Convert today's logs with coordinates to markers
+  const userMarkers = todayLogs
+    .filter(log => log.latitude !== null && log.longitude !== null)
+    .map(log => ({
+      id: log.id,
+      lat: log.latitude as number,
+      lng: log.longitude as number,
+      name: `My Location (${getEventName(log.eventType)})`,
+      status: log.isOutsideGeofence ? "Outside Geofence" : "Valid",
+      time: log.createdAt,
+      type: log.attendanceType
+    }));
+
   return (
     <div className="dashboard-container">
       <ClockoutReminder 
@@ -41,6 +57,15 @@ export default async function DashboardPage() {
         <div className="main-column">
           <ClockWidget initialLogs={todayLogs} />
           
+          {geofenceConfig.enabled && (
+            <div className="card mt-4">
+              <h3 className="card-title">My Location</h3>
+              <div style={{ marginTop: "1rem" }}>
+                <MapView markers={userMarkers} geofences={geofenceConfig.locations} />
+              </div>
+            </div>
+          )}
+
           <div className="card mt-4">
             <h3 className="card-title">Today's Activity</h3>
             {todayLogs.length === 0 ? (
@@ -67,7 +92,20 @@ export default async function DashboardPage() {
         <div className="side-column">
           <div className="card">
             <h3 className="card-title">My Stats</h3>
-            <p className="text-muted mt-2">Personal analytics coming soon...</p>
+            <div style={{ marginTop: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-color)", paddingBottom: "0.5rem" }}>
+                <span className="text-muted">Days Worked</span>
+                <strong>{myStats.totalDays}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-color)", paddingBottom: "0.5rem" }}>
+                <span className="text-muted">WFH Sessions</span>
+                <strong>{myStats.wfhDays}</strong>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span className="text-muted">Out of Bounds</span>
+                <strong style={{ color: "var(--danger-color)" }}>{myStats.outOfBounds}</strong>
+              </div>
+            </div>
           </div>
         </div>
       </div>

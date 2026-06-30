@@ -112,15 +112,19 @@ export async function logAttendance(log: Omit<AttendanceLog, "id" | "createdAt">
 
 export async function getUserAttendanceToday(userId: string): Promise<AttendanceLog[]> {
   const db = await getDb();
-  const todayStart = new Date();
-  todayStart.setUTCHours(0, 0, 0, 0);
   
+  // Fetch recent logs
   const rows = await db.all<any>(
-    "SELECT * FROM attendance_logs WHERE user_id = ? AND created_at >= ? ORDER BY created_at ASC",
-    [userId, todayStart.toISOString()]
+    "SELECT * FROM attendance_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT 20",
+    [userId]
   );
   
-  return rows.map(mapAttendanceLogRow);
+  const logs = rows.map(mapAttendanceLogRow);
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+  
+  // Return ascending order for today's logs
+  return logs.filter(log => new Date(log.createdAt).getTime() >= todayStart.getTime()).reverse();
 }
 
 export async function getAttendanceHistory(userId: string, limit: number = 50): Promise<AttendanceLog[]> {
@@ -187,7 +191,32 @@ export async function getAttendanceStats(date?: string): Promise<any> {
   };
 }
 
+export async function getUserStats(userId: string): Promise<any> {
+  const db = await getDb();
+  
+  // Stats for the current user
+  const statsRow = await db.one<any>(
+    `SELECT 
+      COUNT(DISTINCT date(created_at)) as totalDays,
+      SUM(CASE WHEN event_type = 'clock_in' AND attendance_type = 'wfh' THEN 1 ELSE 0 END) as wfhDays,
+      SUM(CASE WHEN is_outside_geofence = 1 THEN 1 ELSE 0 END) as outOfBounds
+     FROM attendance_logs
+     WHERE user_id = ?`,
+    [userId]
+  );
+  
+  return {
+    totalDays: statsRow?.totalDays || 0,
+    wfhDays: statsRow?.wfhDays || 0,
+    outOfBounds: statsRow?.outOfBounds || 0,
+  };
+}
+
 function mapAttendanceLogRow(row: any): AttendanceLog {
+  const createdAt = row.created_at.includes('T') 
+    ? row.created_at 
+    : row.created_at.replace(' ', 'T') + 'Z';
+    
   return {
     id: row.id,
     userId: row.user_id,
@@ -199,6 +228,6 @@ function mapAttendanceLogRow(row: any): AttendanceLog {
     note: row.note,
     photoUrl: row.photo_url,
     isOutsideGeofence: row.is_outside_geofence === 1,
-    createdAt: row.created_at,
+    createdAt: createdAt,
   };
 }
