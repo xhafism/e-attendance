@@ -19,6 +19,8 @@ interface MapViewProps {
     name: string;
   }>;
   onMapClick?: (lat: number, lng: number) => void;
+  editableGeofences?: boolean;
+  onGeofenceChange?: (index: number, newFence: any) => void;
 }
 
 const MapComponent = dynamic(() => import("./MapComponent"), { 
