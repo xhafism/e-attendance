@@ -59,6 +59,12 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
     }
   };
 
+  const handleGeofenceChange = (index: number, newFence: any) => {
+    const newLocations = [...locations];
+    newLocations[index] = newFence;
+    setLocations(newLocations);
+  };
+
   return (
     <div className="settings-container">
       {message && (
@@ -84,7 +90,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
           <div className="locations-list">
             <h4 style={{ marginBottom: '1rem' }}>Office Locations</h4>
             <p className="text-muted mb-4" style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
-              Tip: You can click anywhere on the map below to easily drop a new location pin!
+              Tip: Click anywhere on the map to drop a new pin. You can also drag existing pins to move them, or drag their edge markers to resize the radius!
             </p>
             
             {locations.map((loc, i) => (
@@ -116,7 +122,13 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
             </button>
 
             <div style={{ marginBottom: '1.5rem' }}>
-              <MapView markers={[]} geofences={locations} onMapClick={handleMapClick} />
+              <MapView 
+                markers={[]} 
+                geofences={locations} 
+                onMapClick={handleMapClick} 
+                editableGeofences={true}
+                onGeofenceChange={handleGeofenceChange}
+              />
             </div>
           </div>
         )}

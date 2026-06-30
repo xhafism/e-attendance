@@ -31,6 +31,8 @@ interface MapViewProps {
     name: string;
   }>;
   onMapClick?: (lat: number, lng: number) => void;
+  editableGeofences?: boolean;
+  onGeofenceChange?: (index: number, newFence: any) => void;
 }
 
 function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: number) => void }) {
@@ -44,7 +46,56 @@ function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: numbe
   return null;
 }
 
-export default function MapComponent({ markers, geofences, onMapClick }: MapViewProps) {
+function EditableGeofence({ fence, index, onChange }: { fence: any, index: number, onChange: (i: number, f: any) => void }) {
+  const R = 6378137;
+  // Calculate edge longitude directly east of the center
+  const dLng = (fence.radius / R) * (180 / Math.PI) / Math.cos(fence.lat * Math.PI / 180);
+  const edgeLng = fence.lng + dLng;
+
+  return (
+    <>
+      <Circle
+        center={[fence.lat, fence.lng]}
+        radius={fence.radius}
+        pathOptions={{ color: 'var(--info-color)', fillColor: 'var(--info-color)', fillOpacity: 0.1 }}
+      >
+        <Popup>{fence.name} ({fence.radius}m)</Popup>
+      </Circle>
+
+      {/* Center Marker (Move) */}
+      <Marker 
+        position={[fence.lat, fence.lng]} 
+        draggable={true} 
+        eventHandlers={{
+          dragend: (e) => {
+            const pos = e.target.getLatLng();
+            onChange(index, { ...fence, lat: parseFloat(pos.lat.toFixed(6)), lng: parseFloat(pos.lng.toFixed(6)) });
+          }
+        }}
+      >
+        <Popup>Drag to move {fence.name}</Popup>
+      </Marker>
+
+      {/* Edge Marker (Resize) */}
+      <Marker 
+        position={[fence.lat, edgeLng]} 
+        draggable={true} 
+        eventHandlers={{
+          dragend: (e) => {
+            const pos = e.target.getLatLng();
+            const center = L.latLng(fence.lat, fence.lng);
+            const newRadius = Math.round(center.distanceTo(pos));
+            onChange(index, { ...fence, radius: Math.max(10, newRadius) });
+          }
+        }}
+      >
+        <Popup>Drag to resize {fence.name}</Popup>
+      </Marker>
+    </>
+  );
+}
+
+export default function MapComponent({ markers, geofences, onMapClick, editableGeofences, onGeofenceChange }: MapViewProps) {
   const defaultCenter: [number, number] = geofences.length > 0 
     ? [geofences[0].lat, geofences[0].lng] 
     : [3.139, 101.686]; // KL
@@ -59,16 +110,20 @@ export default function MapComponent({ markers, geofences, onMapClick }: MapView
         
         <MapClickHandler onMapClick={onMapClick} />
         
-        {geofences.map((fence, i) => (
-          <Circle
-            key={i}
-            center={[fence.lat, fence.lng]}
-            radius={fence.radius}
-            pathOptions={{ color: 'var(--info-color)', fillColor: 'var(--info-color)', fillOpacity: 0.1 }}
-          >
-            <Popup>{fence.name} ({fence.radius}m)</Popup>
-          </Circle>
-        ))}
+        {geofences.map((fence, i) => 
+          editableGeofences && onGeofenceChange ? (
+            <EditableGeofence key={i} index={i} fence={fence} onChange={onGeofenceChange} />
+          ) : (
+            <Circle
+              key={i}
+              center={[fence.lat, fence.lng]}
+              radius={fence.radius}
+              pathOptions={{ color: 'var(--info-color)', fillColor: 'var(--info-color)', fillOpacity: 0.1 }}
+            >
+              <Popup>{fence.name} ({fence.radius}m)</Popup>
+            </Circle>
+          )
+        )}
 
         {markers.map((marker) => (
           <Marker key={marker.id} position={[marker.lat, marker.lng]}>
