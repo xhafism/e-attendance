@@ -48,7 +48,19 @@ function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: numbe
   return null;
 }
 
+const GEOFENCE_COLORS = [
+  '#3b82f6', // blue
+  '#10b981', // green
+  '#f59e0b', // amber
+  '#8b5cf6', // violet
+  '#ec4899', // pink
+  '#14b8a6', // teal
+  '#f43f5e', // rose
+];
+
 function EditableGeofence({ fence, index, onChange }: { fence: any, index: number, onChange: (i: number, f: any) => void }) {
+  const color = GEOFENCE_COLORS[index % GEOFENCE_COLORS.length];
+  
   if (fence.type === 'polygon') {
     const pts = fence.polygon || [];
     const positions = pts.map((p: any) => [p.lat, p.lng] as [number, number]);
@@ -57,7 +69,7 @@ function EditableGeofence({ fence, index, onChange }: { fence: any, index: numbe
         {positions.length > 0 && (
           <Polygon 
             positions={positions} 
-            pathOptions={{ color: 'var(--info-color)', fillColor: 'var(--info-color)', fillOpacity: 0.1 }}
+            pathOptions={{ color, fillColor: color, fillOpacity: 0.2 }}
           >
             <Popup>{fence.name}</Popup>
           </Polygon>
@@ -107,7 +119,7 @@ function EditableGeofence({ fence, index, onChange }: { fence: any, index: numbe
       <Circle
         center={[fence.lat, fence.lng]}
         radius={fence.radius}
-        pathOptions={{ color: 'var(--info-color)', fillColor: 'var(--info-color)', fillOpacity: 0.1 }}
+        pathOptions={{ color, fillColor: color, fillOpacity: 0.2 }}
       >
         <Popup>{fence.name} ({fence.radius}m)</Popup>
       </Circle>
@@ -158,15 +170,16 @@ export default function MapComponent({ markers, geofences, onMapClick, editableG
         
         <MapClickHandler onMapClick={onMapClick} />
         
-        {geofences.map((fence, i) => 
-          editableGeofences && onGeofenceChange ? (
+        {geofences.map((fence, i) => {
+          const color = GEOFENCE_COLORS[i % GEOFENCE_COLORS.length];
+          return editableGeofences && onGeofenceChange ? (
             <EditableGeofence key={i} index={i} fence={fence} onChange={onGeofenceChange} />
           ) : (
             fence.type === 'polygon' && fence.polygon && fence.polygon.length > 0 ? (
               <Polygon
                 key={i}
                 positions={fence.polygon.map(p => [p.lat, p.lng])}
-                pathOptions={{ color: 'var(--info-color)', fillColor: 'var(--info-color)', fillOpacity: 0.1 }}
+                pathOptions={{ color, fillColor: color, fillOpacity: 0.2 }}
               >
                 <Popup>{fence.name}</Popup>
               </Polygon>
@@ -175,13 +188,13 @@ export default function MapComponent({ markers, geofences, onMapClick, editableG
                 key={i}
                 center={[fence.lat, fence.lng]}
                 radius={fence.radius}
-                pathOptions={{ color: 'var(--info-color)', fillColor: 'var(--info-color)', fillOpacity: 0.1 }}
+                pathOptions={{ color, fillColor: color, fillOpacity: 0.2 }}
               >
                 <Popup>{fence.name} ({fence.radius}m)</Popup>
               </Circle>
             )
-          )
-        )}
+          );
+        })}
 
         {markers.map((marker) => (
           <Marker key={marker.id} position={[marker.lat, marker.lng]}>
