@@ -41,6 +41,20 @@ export async function getSettings(): Promise<Record<string, string>> {
   return settings;
 }
 
+export async function getAllLogs() {
+  const db = await getDb();
+  
+  const rawLogs = await db.all(`
+    SELECT l.*, u.name as user_name, u.email as user_email
+    FROM attendance_logs l
+    LEFT JOIN users u ON l.user_id = u.id
+    ORDER BY l.created_at DESC
+    LIMIT 1000
+  `);
+  
+  return rawLogs as any[];
+}
+
 export async function updateSettings(settings: Record<string, string>): Promise<void> {
   const db = await getDb();
   for (const [key, value] of Object.entries(settings)) {
