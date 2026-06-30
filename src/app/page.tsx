@@ -58,6 +58,7 @@ export default async function DashboardPage() {
           <ClockWidget 
             initialLogs={todayLogs} 
             requiredHours={settings.required_hours ? parseFloat(settings.required_hours) : 9} 
+            requireSelfie={settings.require_selfie !== 'false'}
           />
           
           {geofenceConfig.enabled && (

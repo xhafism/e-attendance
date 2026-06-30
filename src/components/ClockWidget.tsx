@@ -9,9 +9,10 @@ import { SelfieCapture } from "./SelfieCapture";
 interface ClockWidgetProps {
   initialLogs: AttendanceLog[];
   requiredHours?: number;
+  requireSelfie?: boolean;
 }
 
-export default function ClockWidget({ initialLogs, requiredHours = 9 }: ClockWidgetProps) {
+export default function ClockWidget({ initialLogs, requiredHours = 9, requireSelfie = true }: ClockWidgetProps) {
   const [clockState, setClockState] = useState<ClockState>("idle");
   const [attendanceType, setAttendanceType] = useState<AttendanceType>("office");
   const [isLocating, setIsLocating] = useState(false);
@@ -113,8 +114,8 @@ export default function ClockWidget({ initialLogs, requiredHours = 9 }: ClockWid
       }
     }
 
-    // Show selfie capture on clock-in
-    if (eventType === "clock_in") {
+    // Show selfie capture on clock-in if required
+    if (eventType === "clock_in" && requireSelfie) {
       setPendingEvent(eventType);
       setShowSelfie(true);
     } else {

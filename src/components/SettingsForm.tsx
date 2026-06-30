@@ -136,6 +136,20 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
             Example: 8-5 is 9 hours (including 1 hour break). Used to warn users if they clock out early.
           </p>
         </div>
+
+        <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <label className="form-label" style={{ margin: 0 }}>Require Selfie on Clock In</label>
+          <input 
+            type="checkbox" 
+            checked={initialSettings.require_selfie !== "false"} 
+            onChange={(e) => {
+              updateSettingsAction({ require_selfie: e.target.checked.toString() }).then(() => {
+                alert("Selfie requirement updated");
+              });
+            }} 
+            style={{ width: '1.25rem', height: '1.25rem' }}
+          />
+        </div>
       </div>
     </div>
   );
