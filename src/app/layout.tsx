@@ -1,13 +1,28 @@
-import type { Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 import "./index.css";
 import { getCurrentUser } from "@/lib/auth";
 import { Clock, Map, Settings, Users, LogOut, LayoutDashboard } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "e-attendance",
+  description: "Employee Attendance Portal",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "e-attendance",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  themeColor: "#ffffff",
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
