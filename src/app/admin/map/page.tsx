@@ -65,6 +65,11 @@ export default async function AdminMapPage({ searchParams }: { searchParams: Pro
       return log.userId === selectedUserId && logTime >= targetDate.getTime() && logTime < nextDate.getTime();
     });
 
+    const locationCounts = new Map<string, number>();
+
+    // Sort user logs oldest to newest for the timeline
+    userLogs.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
     for (const log of userLogs) {
       if (log.latitude && log.longitude) {
         const eventLabels: Record<string, string> = {
@@ -73,10 +78,20 @@ export default async function AdminMapPage({ searchParams }: { searchParams: Pro
           break_start: 'Break Started',
           break_end: 'Break Ended'
         };
+        
+        // Offset overlapping markers slightly so they are all visible
+        const locKey = `${log.latitude},${log.longitude}`;
+        const count = locationCounts.get(locKey) || 0;
+        locationCounts.set(locKey, count + 1);
+
+        // 0.00005 degrees is ~5.5 meters
+        const latOffset = count * 0.00005;
+        const lngOffset = count * 0.00005;
+        
         markers.push({
           id: log.id,
-          lat: log.latitude,
-          lng: log.longitude,
+          lat: log.latitude + latOffset,
+          lng: log.longitude + lngOffset,
           name: `${log.user.name} - ${eventLabels[log.eventType] || log.eventType}`,
           status: log.isOutsideGeofence ? "Outside Geofence" : "Valid",
           time: log.createdAt,
@@ -84,6 +99,86 @@ export default async function AdminMapPage({ searchParams }: { searchParams: Pro
         });
       }
     }
+
+    return (
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <h1 className="page-title mb-0" style={{ margin: 0 }}>Live Map</h1>
+          
+          <form style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: 'var(--bg-secondary)', padding: '0.5rem 1rem', borderRadius: 'var(--radius)', border: '1px solid var(--border-color)', flexWrap: 'wrap' }}>
+            <label className="text-muted" style={{ fontWeight: 500, margin: 0 }}>Filter:</label>
+            
+            <select 
+              name="user"
+              defaultValue={selectedUserId}
+              className="form-control"
+              style={{ width: 'auto', padding: '0.25rem 0.5rem' }}
+            >
+              <option value="all">All Users</option>
+              {allUsers.map(u => (
+                <option key={u.id} value={u.id}>{u.name}</option>
+              ))}
+            </select>
+            
+            <input 
+              type="date" 
+              name="date" 
+              defaultValue={dateStr}
+              className="form-control"
+              style={{ width: 'auto', padding: '0.25rem 0.5rem' }}
+            />
+            <button type="submit" className="btn btn-primary" style={{ padding: '0.4rem 1rem' }}>Apply</button>
+          </form>
+        </div>
+        
+        <div className="card" style={{ marginBottom: '1.5rem' }}>
+          <p>Showing <strong>{markers.length}</strong> activity locations for <strong>{allUsers.find(u => u.id === selectedUserId)?.name || 'the selected user'}</strong> on this date.</p>
+        </div>
+        
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <MapView markers={markers} geofences={locations} />
+          </div>
+          
+          <div className="card" style={{ gridColumn: '1 / -1' }}>
+            <h3 className="card-title">Activity Timeline</h3>
+            {userLogs.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {userLogs.map((log, index) => {
+                  const eventLabels: Record<string, string> = {
+                    clock_in: 'Clock In',
+                    clock_out: 'Clock Out',
+                    break_start: 'Break Started',
+                    break_end: 'Break Ended'
+                  };
+                  return (
+                    <div key={log.id} style={{ display: 'flex', gap: '1rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius)', borderLeft: `4px solid ${log.isOutsideGeofence ? 'var(--danger-color)' : 'var(--primary-color)'}` }}>
+                      <div style={{ fontWeight: 600, minWidth: '100px' }}>
+                        {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 500 }}>{eventLabels[log.eventType] || log.eventType}</div>
+                        <div className="text-muted" style={{ fontSize: '0.9rem' }}>
+                          Type: {log.attendanceType} {log.isOutsideGeofence ? '(Outside Geofence)' : ''}
+                        </div>
+                        {log.address && (
+                          <div className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>📍 {log.address}</div>
+                        )}
+                        {log.note && (
+                          <div className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.25rem', fontStyle: 'italic' }}>"{log.note}"</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-muted">No activity found for this user on this date.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -118,14 +213,10 @@ export default async function AdminMapPage({ searchParams }: { searchParams: Pro
       </div>
       
       <div className="card" style={{ marginBottom: '1.5rem' }}>
-        {selectedUserId === "all" ? (
-          isToday ? (
-            <p><strong>{workingCount}</strong> employees working | <strong>{breakCount}</strong> on break</p>
-          ) : (
-            <p><strong>{recordedCount}</strong> employees recorded attendance on this date.</p>
-          )
+        {isToday ? (
+          <p><strong>{workingCount}</strong> employees working | <strong>{breakCount}</strong> on break</p>
         ) : (
-          <p>Showing <strong>{markers.length}</strong> activity locations for the selected user.</p>
+          <p><strong>{recordedCount}</strong> employees recorded attendance on this date.</p>
         )}
       </div>
       
