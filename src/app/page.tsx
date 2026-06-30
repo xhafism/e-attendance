@@ -1,10 +1,20 @@
 import { requireUser } from "@/lib/auth";
-import { getUserAttendanceToday } from "@/lib/store";
+import { getUserAttendanceToday, getSettings } from "@/lib/store";
 import ClockWidget from "@/components/ClockWidget";
+import { ClockoutReminder } from "@/components/ClockoutReminder";
 
 export default async function DashboardPage() {
   const user = await requireUser();
   const todayLogs = await getUserAttendanceToday(user.id);
+  const settings = await getSettings();
+
+  // Determine clock state for the reminder
+  let clockState: "idle" | "working" | "on_break" = "idle";
+  if (todayLogs.length > 0) {
+    const lastEvent = todayLogs[todayLogs.length - 1];
+    if (lastEvent.eventType === "clock_in" || lastEvent.eventType === "break_end") clockState = "working";
+    if (lastEvent.eventType === "break_start") clockState = "on_break";
+  }
 
   const formatTime = (isoString: string) => {
     return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -22,6 +32,11 @@ export default async function DashboardPage() {
 
   return (
     <div className="dashboard-container">
+      <ClockoutReminder 
+        clockState={clockState} 
+        enabled={settings.reminder_enabled !== 'false'} 
+        time={settings.reminder_time || "18:00"} 
+      />
       <div className="dashboard-grid">
         <div className="main-column">
           <ClockWidget initialLogs={todayLogs} />
