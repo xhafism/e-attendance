@@ -96,12 +96,14 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
         
         <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
           <label className="form-label" style={{ margin: 0 }}>Enable Geofencing</label>
-          <input 
-            type="checkbox" 
-            checked={geofenceEnabled} 
-            onChange={(e) => setGeofenceEnabled(e.target.checked)} 
-            style={{ width: '1.25rem', height: '1.25rem' }}
-          />
+          <label className="toggle-switch">
+            <input 
+              type="checkbox" 
+              checked={geofenceEnabled} 
+              onChange={(e) => setGeofenceEnabled(e.target.checked)} 
+            />
+            <span className="toggle-slider"></span>
+          </label>
         </div>
 
         {geofenceEnabled && (
@@ -228,16 +230,18 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
 
         <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <label className="form-label" style={{ margin: 0 }}>Require Selfie on Clock In</label>
-          <input 
-            type="checkbox" 
-            checked={initialSettings.require_selfie !== "false"} 
-            onChange={(e) => {
-              updateSettingsAction({ require_selfie: e.target.checked.toString() }).then(() => {
-                alert("Selfie requirement updated");
-              });
-            }} 
-            style={{ width: '1.25rem', height: '1.25rem' }}
-          />
+          <label className="toggle-switch">
+            <input 
+              type="checkbox" 
+              checked={initialSettings.require_selfie !== "false"} 
+              onChange={(e) => {
+                updateSettingsAction({ require_selfie: e.target.checked.toString() }).then(() => {
+                  alert("Selfie requirement updated");
+                });
+              }} 
+            />
+            <span className="toggle-slider"></span>
+          </label>
         </div>
       </div>
     </div>
