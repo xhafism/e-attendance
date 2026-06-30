@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Circle, Polygon, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Circle, Polygon, Polyline, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -23,6 +23,7 @@ interface MapViewProps {
     status: string;
     time: string;
     type: string;
+    eventType?: string;
   }>;
   geofences: Array<{
     lat: number;
@@ -35,6 +36,7 @@ interface MapViewProps {
   onMapClick?: (lat: number, lng: number) => void;
   editableGeofences?: boolean;
   onGeofenceChange?: (index: number, newFence: any) => void;
+  showPath?: boolean;
 }
 
 function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: number) => void }) {
@@ -57,6 +59,16 @@ const GEOFENCE_COLORS = [
   '#14b8a6', // teal
   '#f43f5e', // rose
 ];
+
+function getMarkerColor(eventType?: string) {
+  switch (eventType) {
+    case 'clock_in': return 'var(--success-color, #10b981)';
+    case 'clock_out': return 'var(--danger-color, #ef4444)';
+    case 'break_start': return 'var(--warning-color, #f59e0b)';
+    case 'break_end': return 'var(--info-color, #3b82f6)';
+    default: return 'var(--primary-color, #6366f1)';
+  }
+}
 
 function EditableGeofence({ fence, index, onChange }: { fence: any, index: number, onChange: (i: number, f: any) => void }) {
   const color = GEOFENCE_COLORS[index % GEOFENCE_COLORS.length];
@@ -165,10 +177,13 @@ function EditableGeofence({ fence, index, onChange }: { fence: any, index: numbe
   );
 }
 
-export default function MapComponent({ markers, geofences, onMapClick, editableGeofences, onGeofenceChange }: MapViewProps) {
+export default function MapComponent({ markers, geofences, onMapClick, editableGeofences, onGeofenceChange, showPath }: MapViewProps) {
   const defaultCenter: [number, number] = geofences.length > 0 
     ? [geofences[0].lat, geofences[0].lng] 
     : [3.139, 101.686]; // KL
+
+  // Prepare path points if requested and there are markers
+  const pathPositions = showPath ? markers.map(m => [m.lat, m.lng] as [number, number]) : [];
 
   return (
     <div style={{ height: "400px", width: "100%", borderRadius: "var(--radius)", overflow: "hidden", border: "1px solid var(--border-color)", zIndex: 0 }}>
@@ -206,16 +221,34 @@ export default function MapComponent({ markers, geofences, onMapClick, editableG
           );
         })}
 
-        {markers.map((marker) => (
-          <Marker key={marker.id} position={[marker.lat, marker.lng]}>
-            <Popup>
-              <strong>{marker.name}</strong><br/>
-              Status: {marker.status}<br/>
-              Type: {marker.type}<br/>
-              Time: {new Date(marker.time).toLocaleTimeString([], { timeZone: 'Asia/Kuala_Lumpur' })}
-            </Popup>
-          </Marker>
-        ))}
+        {showPath && pathPositions.length > 1 && (
+          <Polyline 
+            positions={pathPositions} 
+            pathOptions={{ color: 'var(--primary-color, #6366f1)', weight: 3, dashArray: '5, 5' }} 
+          />
+        )}
+
+        {markers.map((marker) => {
+          const mColor = getMarkerColor(marker.eventType);
+          
+          const customIcon = L.divIcon({
+            className: 'custom-user-marker',
+            html: `<div style="width: 16px; height: 16px; background: ${mColor}; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 5px rgba(0,0,0,0.4);"></div>`,
+            iconSize: [16, 16],
+            iconAnchor: [8, 8]
+          });
+
+          return (
+            <Marker key={marker.id} position={[marker.lat, marker.lng]} icon={customIcon}>
+              <Popup>
+                <strong>{marker.name}</strong><br/>
+                Status: {marker.status}<br/>
+                Type: {marker.type}<br/>
+                Time: {new Date(marker.time).toLocaleTimeString([], { timeZone: 'Asia/Kuala_Lumpur' })}
+              </Popup>
+            </Marker>
+          );
+        })}
       </MapContainer>
     </div>
   );

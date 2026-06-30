@@ -54,7 +54,8 @@ export default async function AdminMapPage({ searchParams }: { searchParams: Pro
           name: log.user.name,
           status: log.eventType === 'clock_out' ? 'Clocked Out' : (log.eventType === 'break_start' ? 'On Break' : 'Working'),
           time: log.createdAt,
-          type: log.attendanceType
+          type: log.attendanceType,
+          eventType: log.eventType
         });
       }
     }
@@ -95,7 +96,8 @@ export default async function AdminMapPage({ searchParams }: { searchParams: Pro
           name: `${log.user.name} - ${eventLabels[log.eventType] || log.eventType}`,
           status: log.isOutsideGeofence ? "Outside Geofence" : "Valid",
           time: log.createdAt,
-          type: log.attendanceType
+          type: log.attendanceType,
+          eventType: log.eventType
         });
       }
     }
@@ -137,7 +139,7 @@ export default async function AdminMapPage({ searchParams }: { searchParams: Pro
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
           <div style={{ gridColumn: '1 / -1' }}>
-            <MapView markers={markers} geofences={locations} />
+            <MapView markers={markers} geofences={locations} showPath={true} />
           </div>
           
           <div className="card" style={{ gridColumn: '1 / -1' }}>
