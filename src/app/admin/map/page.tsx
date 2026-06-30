@@ -154,7 +154,7 @@ export default async function AdminMapPage({ searchParams }: { searchParams: Pro
                   return (
                     <div key={log.id} style={{ display: 'flex', gap: '1rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: 'var(--radius)', borderLeft: `4px solid ${log.isOutsideGeofence ? 'var(--danger-color)' : 'var(--primary-color)'}` }}>
                       <div style={{ fontWeight: 600, minWidth: '100px' }}>
-                        {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur' })}
                       </div>
                       <div>
                         <div style={{ fontWeight: 500 }}>{eventLabels[log.eventType] || log.eventType}</div>

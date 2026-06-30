@@ -189,7 +189,7 @@ export default function MapComponent({ markers, geofences, onMapClick, editableG
               <strong>{marker.name}</strong><br/>
               Status: {marker.status}<br/>
               Type: {marker.type}<br/>
-              Time: {new Date(marker.time).toLocaleTimeString()}
+              Time: {new Date(marker.time).toLocaleTimeString([], { timeZone: 'Asia/Kuala_Lumpur' })}
             </Popup>
           </Marker>
         ))}

@@ -20,7 +20,7 @@ export default async function DashboardPage() {
   }
 
   const formatTime = (isoString: string) => {
-    return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur' });
   };
 
   const getEventName = (type: string) => {

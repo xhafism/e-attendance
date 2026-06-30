@@ -4,7 +4,8 @@ export function AttendanceTable({ logs, showUserColumn = false }: { logs: any[],
   const formatTime = (isoString: string) => {
     return new Date(isoString).toLocaleString('en-MY', { 
       year: 'numeric', month: 'short', day: 'numeric', 
-      hour: '2-digit', minute: '2-digit' 
+      hour: '2-digit', minute: '2-digit',
+      timeZone: 'Asia/Kuala_Lumpur'
     });
   };
 
