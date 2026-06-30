@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { AttendanceLog, AttendanceType, ClockState, EventType } from "@/lib/types";
 import { submitAttendance } from "@/app/actions";
-import { Play, Square, Coffee, MapPin, Clock } from "lucide-react";
+import { Play, LogOut, Coffee, MapPin, Clock } from "lucide-react";
 import { SelfieCapture } from "./SelfieCapture";
 
 interface ClockWidgetProps {
@@ -280,7 +280,7 @@ export default function ClockWidget({ initialLogs, requiredHours = 9, requireSel
               onClick={() => handleActionClick("clock_out")}
               disabled={isSubmitting || isLocating}
             >
-              <Square size={20} />
+              <LogOut size={20} />
               Clock Out
             </button>
           </div>

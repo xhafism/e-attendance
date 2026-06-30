@@ -139,7 +139,7 @@ export default async function AdminMapPage({ searchParams }: { searchParams: Pro
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
           <div style={{ gridColumn: '1 / -1' }}>
-            <MapView markers={markers} geofences={locations} showPath={true} />
+            <MapView markers={markers} geofences={locations} showPath={true} height="600px" />
           </div>
           
           <div className="card" style={{ gridColumn: '1 / -1' }}>

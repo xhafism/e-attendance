@@ -193,6 +193,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
                 onMapClick={handleMapClick} 
                 editableGeofences={true}
                 onGeofenceChange={handleGeofenceChange}
+                height="600px"
               />
             </div>
           </div>

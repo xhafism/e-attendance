@@ -23,6 +23,7 @@ interface MapViewProps {
   editableGeofences?: boolean;
   onGeofenceChange?: (index: number, newFence: any) => void;
   showPath?: boolean;
+  height?: string;
 }
 
 const MapComponent = dynamic(() => import("./MapComponent"), { 

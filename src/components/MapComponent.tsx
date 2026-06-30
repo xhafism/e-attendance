@@ -37,6 +37,7 @@ interface MapViewProps {
   editableGeofences?: boolean;
   onGeofenceChange?: (index: number, newFence: any) => void;
   showPath?: boolean;
+  height?: string;
 }
 
 function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: number) => void }) {
@@ -68,6 +69,25 @@ function getMarkerColor(eventType?: string) {
     case 'break_end': return 'var(--info-color, #3b82f6)';
     default: return 'var(--primary-color, #6366f1)';
   }
+}
+
+function ResetViewControl({ center, zoom }: { center: [number, number], zoom: number }) {
+  const map = useMapEvents({});
+  return (
+    <div className="leaflet-top leaflet-right" style={{ pointerEvents: 'auto', marginTop: '10px', marginRight: '10px' }}>
+      <button 
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          map.setView(center, zoom);
+        }}
+        className="btn btn-secondary"
+        style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', background: 'white', color: '#333', border: '2px solid rgba(0,0,0,0.2)', cursor: 'pointer' }}
+      >
+        Reset Area
+      </button>
+    </div>
+  );
 }
 
 function EditableGeofence({ fence, index, onChange }: { fence: any, index: number, onChange: (i: number, f: any) => void }) {
@@ -177,17 +197,20 @@ function EditableGeofence({ fence, index, onChange }: { fence: any, index: numbe
   );
 }
 
-export default function MapComponent({ markers, geofences, onMapClick, editableGeofences, onGeofenceChange, showPath }: MapViewProps) {
-  const defaultCenter: [number, number] = geofences.length > 0 
-    ? [geofences[0].lat, geofences[0].lng] 
-    : [3.139, 101.686]; // KL
+export default function MapComponent({ markers, geofences, onMapClick, editableGeofences, onGeofenceChange, showPath, height = "400px" }: MapViewProps) {
+  const defaultCenter: [number, number] = markers.length > 0
+    ? [markers[markers.length - 1].lat, markers[markers.length - 1].lng]
+    : geofences.length > 0 
+      ? [geofences[0].lat, geofences[0].lng] 
+      : [3.139, 101.686]; // KL
 
   // Prepare path points if requested and there are markers
   const pathPositions = showPath ? markers.map(m => [m.lat, m.lng] as [number, number]) : [];
 
   return (
-    <div style={{ height: "400px", width: "100%", borderRadius: "var(--radius)", overflow: "hidden", border: "1px solid var(--border-color)", zIndex: 0 }}>
+    <div style={{ height: height, width: "100%", borderRadius: "var(--radius)", overflow: "hidden", border: "1px solid var(--border-color)", zIndex: 0 }}>
       <MapContainer center={defaultCenter} zoom={13} style={{ height: "100%", width: "100%", zIndex: 1 }}>
+        <ResetViewControl center={defaultCenter} zoom={13} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
