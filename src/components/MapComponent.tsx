@@ -2,7 +2,17 @@
 
 import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
+import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+
+// Fix Leaflet marker icon issue in Next.js
+// This runs at module evaluation time on the client (safe because of ssr: false dynamic import)
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
 
 interface MapViewProps {
   markers: Array<{
@@ -23,19 +33,6 @@ interface MapViewProps {
 }
 
 export default function MapComponent({ markers, geofences }: MapViewProps) {
-  // Fix Leaflet marker icon issue in Next.js
-  useEffect(() => {
-    (async function init() {
-      const L = await import("leaflet");
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-      });
-    })();
-  }, []);
-
   const defaultCenter: [number, number] = geofences.length > 0 
     ? [geofences[0].lat, geofences[0].lng] 
     : [3.139, 101.686]; // KL
