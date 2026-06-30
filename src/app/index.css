@@ -467,3 +467,122 @@ tbody tr:hover {
 .mt-4 {
   margin-top: 1rem;
 }
+
+/* Dashboard */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 992px) {
+  .dashboard-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.card-title {
+  font-size: 1.125rem;
+  margin-bottom: 1.5rem;
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.ml-2 {
+  margin-left: 0.5rem;
+}
+
+/* Clock Widget */
+.clock-widget {
+  padding: 2rem;
+}
+
+.widget-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.status-badge {
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 500;
+}
+
+.status-idle { background-color: var(--bg-tertiary); color: var(--text-secondary); }
+.status-working { background-color: #dcfce7; color: #166534; }
+.status-on_break { background-color: #fef9c3; color: #854d0e; }
+
+.alert {
+  padding: 1rem;
+  border-radius: var(--radius);
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.alert-danger { background-color: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.alert-success { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.alert-warning { background-color: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+
+.action-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.type-selector {
+  margin-bottom: 1.5rem;
+}
+
+.clock-btn {
+  padding: 1.5rem;
+  font-size: 1.125rem;
+  gap: 0.75rem;
+}
+
+.working-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Timeline */
+.activity-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 1.5rem;
+  position: relative;
+}
+
+.timeline-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 56px;
+  top: 1.5rem;
+  bottom: -1rem;
+  width: 1px;
+  background-color: var(--border-color);
+}
+
+.timeline-time {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.timeline-content {
+  flex: 1;
+  font-size: 0.875rem;
+  padding-bottom: 0.5rem;
+}
