@@ -1,7 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "e-attendance",
-  "account_id": "c96329a6c558173fd172546528d4e077",
   "main": ".open-next/worker.js",
   "workers_dev": true,
   "preview_urls": true,
@@ -12,9 +11,6 @@
     "directory": ".open-next/assets"
   },
   "observability": { "enabled": true },
-  "routes": [
-    { "pattern": "attendance.iiumholdings.com.my", "custom_domain": true }
-  ],
   "d1_databases": [
     {
       "binding": "DB",

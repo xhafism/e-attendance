@@ -5,10 +5,16 @@ import { redirect } from "next/navigation";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 const SESSION_COOKIE = "eattendance_session";
-const SHARED_COOKIE = "iiumh_session";
+const SHARED_COOKIE = process.env.SHARED_COOKIE_NAME || "eattendance_shared_session";
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours
 const SHARED_TTL_S = 86400; // 24 hours
-const ADMIN_EMAILS = ["hafiffi@iiumholdings.com.my"];
+
+function getAdminEmails(): string[] {
+  if (process.env.ADMIN_EMAILS) {
+    return process.env.ADMIN_EMAILS.split(",").map(e => e.trim().toLowerCase());
+  }
+  return [];
+}
 
 function getAuthSecret(): string {
   const secret = process.env.AUTH_SECRET;
@@ -75,7 +81,7 @@ export async function createSession(userId: string): Promise<void> {
     })).toString("base64");
     
     cookieStore.set(SHARED_COOKIE, sharedPayload, {
-      domain: process.env.NODE_ENV === "production" ? "iiumholdings.com.my" : undefined,
+      domain: process.env.COOKIE_DOMAIN || undefined,
       sameSite: "lax",
       maxAge: SHARED_TTL_S
     });
@@ -109,7 +115,7 @@ export async function authenticateUserByEmail(email: string, name: string): Prom
   
   if (!user) {
     const userId = `user-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
-    const role: UserRole = ADMIN_EMAILS.includes(email.toLowerCase()) ? "admin" : "user";
+    const role: UserRole = getAdminEmails().includes(email.toLowerCase()) ? "admin" : "user";
     
     await db.run(
       "INSERT INTO users (id, email, name, role, is_active) VALUES (?, ?, ?, ?, 1)",
