@@ -115,7 +115,27 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
 
       <div className="card">
         <h3 className="card-title">General Settings</h3>
-        <p className="text-muted">More settings (Selfie validation, timezone, auto-clockout) can be added here.</p>
+        
+        <div className="form-group" style={{ marginBottom: '1.5rem', maxWidth: '300px' }}>
+          <label className="form-label">Required Office Hours (per day)</label>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <input 
+              type="number" 
+              step="0.5"
+              className="form-control" 
+              value={initialSettings.required_hours || "9"}
+              onChange={(e) => {
+                updateSettingsAction({ required_hours: e.target.value }).then(() => {
+                  alert("Required hours updated");
+                });
+              }}
+            />
+            <span>hours</span>
+          </div>
+          <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>
+            Example: 8-5 is 9 hours (including 1 hour break). Used to warn users if they clock out early.
+          </p>
+        </div>
       </div>
     </div>
   );

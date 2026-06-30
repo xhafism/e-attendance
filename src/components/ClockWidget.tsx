@@ -3,10 +3,15 @@
 import { useState, useEffect } from "react";
 import { AttendanceLog, AttendanceType, ClockState, EventType } from "@/lib/types";
 import { submitAttendance } from "@/app/actions";
-import { Play, Square, Coffee, MapPin } from "lucide-react";
+import { Play, Square, Coffee, MapPin, Clock } from "lucide-react";
 import { SelfieCapture } from "./SelfieCapture";
 
-export default function ClockWidget({ initialLogs }: { initialLogs: AttendanceLog[] }) {
+interface ClockWidgetProps {
+  initialLogs: AttendanceLog[];
+  requiredHours?: number;
+}
+
+export default function ClockWidget({ initialLogs, requiredHours = 9 }: ClockWidgetProps) {
   const [clockState, setClockState] = useState<ClockState>("idle");
   const [attendanceType, setAttendanceType] = useState<AttendanceType>("office");
   const [isLocating, setIsLocating] = useState(false);
@@ -19,25 +24,56 @@ export default function ClockWidget({ initialLogs }: { initialLogs: AttendanceLo
   const [showSelfie, setShowSelfie] = useState(false);
   const [pendingEvent, setPendingEvent] = useState<EventType | null>(null);
   const [note, setNote] = useState("");
+  
+  const [hoursWorked, setHoursWorked] = useState(0);
 
-  // Compute current state based on today's logs
+  // Compute current state and hours worked based on today's logs
   useEffect(() => {
+    const calculateHours = () => {
+      if (!initialLogs || initialLogs.length === 0) return 0;
+      
+      const sorted = [...initialLogs].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      
+      let totalMs = 0;
+      let currentStart: number | null = null;
+      
+      for (const log of sorted) {
+        if (log.eventType === "clock_in" || log.eventType === "break_end") {
+          currentStart = new Date(log.createdAt).getTime();
+        } else if (log.eventType === "break_start" || log.eventType === "clock_out") {
+          if (currentStart) {
+            totalMs += new Date(log.createdAt).getTime() - currentStart;
+            currentStart = null;
+          }
+        }
+      }
+      
+      if (currentStart) {
+        totalMs += Date.now() - currentStart;
+      }
+      
+      return totalMs / (1000 * 60 * 60);
+    };
+
     if (!initialLogs || initialLogs.length === 0) {
       setClockState("idle");
+      setHoursWorked(0);
       return;
     }
 
-    // Sort by createdAt descending
-    const sorted = [...initialLogs].sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-    const lastEvent = sorted[0];
+    setHoursWorked(calculateHours());
 
+    // Setup interval to update live hours worked if currently active
+    const sortedDesc = [...initialLogs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const lastEvent = sortedDesc[0];
+
+    let isActive = false;
     switch (lastEvent.eventType) {
       case "clock_in":
       case "break_end":
         setClockState("working");
         setAttendanceType(lastEvent.attendanceType);
+        isActive = true;
         break;
       case "break_start":
         setClockState("on_break");
@@ -46,6 +82,13 @@ export default function ClockWidget({ initialLogs }: { initialLogs: AttendanceLo
       case "clock_out":
         setClockState("idle");
         break;
+    }
+
+    if (isActive) {
+      const interval = setInterval(() => {
+        setHoursWorked(calculateHours());
+      }, 60000);
+      return () => clearInterval(interval);
     }
   }, [initialLogs]);
 
@@ -64,6 +107,12 @@ export default function ClockWidget({ initialLogs }: { initialLogs: AttendanceLo
   };
 
   const handleActionClick = (eventType: EventType) => {
+    if (eventType === "clock_out" && hoursWorked < requiredHours) {
+      if (!window.confirm(`Warning: You have only worked ${hoursWorked.toFixed(1)} hours today. The required office hours is ${requiredHours} hours. Are you sure you want to clock out early?`)) {
+        return;
+      }
+    }
+
     // Show selfie capture on clock-in
     if (eventType === "clock_in") {
       setPendingEvent(eventType);
@@ -97,7 +146,6 @@ export default function ClockWidget({ initialLogs }: { initialLogs: AttendanceLo
       lng = loc.lng;
     } catch (err: any) {
       setLocationError(err.message);
-      // We continue without location, the server action handles the geofence warning
     } finally {
       setIsLocating(false);
     }
@@ -108,7 +156,7 @@ export default function ClockWidget({ initialLogs }: { initialLogs: AttendanceLo
         attendanceType,
         latitude: lat,
         longitude: lng,
-        address: null, // Reverse geocoding not implemented yet
+        address: null,
         note: note || null,
         photoUrl: photoUrl
       });
@@ -121,6 +169,10 @@ export default function ClockWidget({ initialLogs }: { initialLogs: AttendanceLo
         if (eventType === "clock_in" || eventType === "break_end") setClockState("working");
         if (eventType === "break_start") setClockState("on_break");
         if (eventType === "clock_out") setClockState("idle");
+        
+        if (eventType === "clock_out") {
+          alert(`You have successfully clocked out. Total time recorded today: ${hoursWorked.toFixed(2)} hours.`);
+        }
       }
     } catch (err: any) {
       setErrorMsg(err.message || "Failed to submit");
@@ -129,14 +181,28 @@ export default function ClockWidget({ initialLogs }: { initialLogs: AttendanceLo
     }
   };
 
+  const formatHours = (hours: number) => {
+    const h = Math.floor(hours);
+    const m = Math.floor((hours - h) * 60);
+    return `${h}h ${m}m`;
+  };
+
   return (
     <div className="card clock-widget">
-      <h3 className="widget-title">Current Status: 
-        <span className={`status-badge status-${clockState}`}>
-          {clockState === 'idle' ? ' Not Clocked In' : 
-           clockState === 'working' ? ' Working' : ' On Break'}
-        </span>
-      </h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h3 className="widget-title" style={{ margin: 0 }}>Current Status: 
+          <span className={`status-badge status-${clockState}`}>
+            {clockState === 'idle' ? ' Not Clocked In' : 
+             clockState === 'working' ? ' Working' : ' On Break'}
+          </span>
+        </h3>
+        {hoursWorked > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 600 }}>
+            <Clock size={16} />
+            {formatHours(hoursWorked)}
+          </div>
+        )}
+      </div>
 
       {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
       {successMsg && <div className="alert alert-success">{successMsg}</div>}

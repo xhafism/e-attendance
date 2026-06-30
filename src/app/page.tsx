@@ -55,7 +55,10 @@ export default async function DashboardPage() {
       />
       <div className="dashboard-grid">
         <div className="main-column">
-          <ClockWidget initialLogs={todayLogs} />
+          <ClockWidget 
+            initialLogs={todayLogs} 
+            requiredHours={settings.required_hours ? parseFloat(settings.required_hours) : 9} 
+          />
           
           {geofenceConfig.enabled && (
             <div className="card mt-4">
