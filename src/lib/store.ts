@@ -41,16 +41,35 @@ export async function getSettings(): Promise<Record<string, string>> {
   return settings;
 }
 
-export async function getAllLogs() {
+export async function getAllLogs(options?: { startDate?: string, endDate?: string, userId?: string }) {
   const db = await getDb();
   
-  const rawLogs = await db.all(`
+  let query = `
     SELECT l.*, u.name as user_name, u.email as user_email
     FROM attendance_logs l
     LEFT JOIN users u ON l.user_id = u.id
-    ORDER BY l.created_at DESC
-    LIMIT 1000
-  `);
+    WHERE 1=1
+  `;
+  const params: any[] = [];
+  
+  if (options?.userId && options.userId !== "all") {
+    query += " AND l.user_id = ?";
+    params.push(options.userId);
+  }
+  
+  if (options?.startDate) {
+    query += " AND date(l.created_at) >= date(?)";
+    params.push(options.startDate);
+  }
+  
+  if (options?.endDate) {
+    query += " AND date(l.created_at) <= date(?)";
+    params.push(options.endDate);
+  }
+  
+  query += " ORDER BY l.created_at DESC LIMIT 5000";
+  
+  const rawLogs = await db.all(query, params);
   
   return rawLogs as any[];
 }

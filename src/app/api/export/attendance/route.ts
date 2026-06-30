@@ -1,13 +1,18 @@
 import { requireAnyRole } from "@/lib/auth";
-import { getAllLogs } from "@/lib/store";
-import { NextResponse } from "next/server";
+import { getAllLogs, getUsers } from "@/lib/store";
+import { NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     await requireAnyRole(["admin", "hr"]);
     
-    const logs = await getAllLogs();
+    const searchParams = request.nextUrl.searchParams;
+    const startDate = searchParams.get("start") || undefined;
+    const endDate = searchParams.get("end") || undefined;
+    const userId = searchParams.get("user") || undefined;
+    
+    const logs = await getAllLogs({ startDate, endDate, userId });
     
     // Format data for Excel
     const data = logs.map(log => ({

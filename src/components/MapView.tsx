@@ -11,6 +11,7 @@ interface MapViewProps {
     status: string;
     time: string;
     type: string;
+    eventType?: string;
   }>;
   geofences: Array<{
     lat: number;
@@ -21,6 +22,7 @@ interface MapViewProps {
   onMapClick?: (lat: number, lng: number) => void;
   editableGeofences?: boolean;
   onGeofenceChange?: (index: number, newFence: any) => void;
+  showPath?: boolean;
 }
 
 const MapComponent = dynamic(() => import("./MapComponent"), { 
