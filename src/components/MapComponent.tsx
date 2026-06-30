@@ -73,13 +73,24 @@ function EditableGeofence({ fence, index, onChange }: { fence: any, index: numbe
                 const pos = e.target.getLatLng();
                 const newPoly = [...pts];
                 newPoly[ptIdx] = { lat: parseFloat(pos.lat.toFixed(6)), lng: parseFloat(pos.lng.toFixed(6)) };
-                
-                // also update main lat/lng to be center of polygon roughly (optional)
                 onChange(index, { ...fence, polygon: newPoly });
               }
             }}
           >
-            <Popup>Drag to move point {ptIdx + 1}</Popup>
+            <Popup>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ marginBottom: '0.5rem' }}>Point {ptIdx + 1}</div>
+                <button 
+                  onClick={() => {
+                    const newPoly = pts.filter((_: any, idx: number) => idx !== ptIdx);
+                    onChange(index, { ...fence, polygon: newPoly });
+                  }}
+                  style={{ background: 'var(--danger-color)', color: 'white', border: 'none', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius)', cursor: 'pointer', fontSize: '0.8rem' }}
+                >
+                  Remove Point
+                </button>
+              </div>
+            </Popup>
           </Marker>
         ))}
       </>

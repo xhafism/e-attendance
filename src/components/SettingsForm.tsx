@@ -122,7 +122,29 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
                 
                 {loc.type === 'polygon' ? (
                   <div style={{ gridColumn: 'span 3', alignSelf: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                    <strong>{loc.polygon?.length || 0}</strong> points drawn. Click on the map to add more points. Drag points on the map to adjust them.
+                    <strong>{loc.polygon?.length || 0}</strong> points drawn. Click on the map to add points.
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                      <button 
+                        className="btn btn-secondary" 
+                        style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem' }}
+                        onClick={() => {
+                          const newPoly = loc.polygon ? [...loc.polygon] : [];
+                          newPoly.pop();
+                          updateLocation(i, 'polygon', newPoly as any);
+                        }}
+                        disabled={!loc.polygon || loc.polygon.length === 0}
+                      >
+                        Undo Last Point
+                      </button>
+                      <button 
+                        className="btn btn-danger" 
+                        style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem' }}
+                        onClick={() => updateLocation(i, 'polygon', [] as any)}
+                        disabled={!loc.polygon || loc.polygon.length === 0}
+                      >
+                        Clear All Points
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <>
