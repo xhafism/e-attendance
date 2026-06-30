@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "e-attendance",
+  "main": ".open-next/worker.js",
+  "workers_dev": true,
+  "preview_urls": true,
+  "compatibility_date": "2026-06-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".open-next/assets"
+  },
+  "observability": { "enabled": true },
+  "routes": [
+    { "pattern": "attendance.iiumholdings.com.my", "custom_domain": true }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "e-attendance-prod",
+      "database_id": "REPLACE_WITH_ACTUAL_D1_ID",
+      "remote": true
+    }
+  ]
+}
