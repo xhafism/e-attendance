@@ -108,8 +108,20 @@ export default function ClockWidget({ initialLogs, requiredHours = 9, requireSel
   };
 
   const handleActionClick = (eventType: EventType) => {
+    // Prevent accidental clicks
+    let actionName = "";
+    if (eventType === "clock_in") actionName = "Clock In";
+    if (eventType === "clock_out") actionName = "Clock Out";
+    if (eventType === "break_start") actionName = "Take a Break";
+    if (eventType === "break_end") actionName = "End Break";
+
     if (eventType === "clock_out" && hoursWorked < requiredHours) {
       if (!window.confirm(`Warning: You have only worked ${hoursWorked.toFixed(1)} hours today. The required office hours is ${requiredHours} hours. Are you sure you want to clock out early?`)) {
+        return;
+      }
+    } else {
+      // General confirmation for other actions to prevent accidental clicks
+      if (!window.confirm(`Are you sure you want to ${actionName}?`)) {
         return;
       }
     }
