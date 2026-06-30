@@ -191,6 +191,76 @@ export async function getAttendanceStats(date?: string): Promise<any> {
   };
 }
 
+export async function getMonthlyAnalytics(): Promise<{
+  daily: Array<{ date: string; present: number }>;
+  byType: { office: number; wfh: number; clientSite: number; fieldWork: number };
+}> {
+  const db = await getDb();
+  
+  // Daily attendance for the last 7 days
+  const dailyRows = await db.all<any>(`
+    SELECT 
+      date(created_at) as day,
+      COUNT(DISTINCT user_id) as present
+    FROM attendance_logs
+    WHERE event_type = 'clock_in' 
+      AND created_at >= date('now', '-6 days')
+    GROUP BY date(created_at)
+    ORDER BY day ASC
+  `);
+
+  const daily = dailyRows.map(row => {
+    // Convert YYYY-MM-DD to short day name like 'Mon'
+    const dateObj = new Date(row.day);
+    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+    return {
+      date: dayName,
+      present: row.present
+    };
+  });
+  
+  // Fill in missing days if fewer than 7 returned
+  if (daily.length < 7) {
+    const filledDaily = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+      const existing = daily.find(x => x.date === dayName);
+      filledDaily.push(existing || { date: dayName, present: 0 });
+    }
+    // Only use the filled one if it has correct length (7)
+    daily.splice(0, daily.length, ...filledDaily);
+  }
+
+  // Type breakdown for the current month
+  const typeRows = await db.all<any>(`
+    SELECT 
+      attendance_type as type,
+      COUNT(DISTINCT user_id || date(created_at)) as count
+    FROM attendance_logs
+    WHERE event_type = 'clock_in'
+      AND created_at >= date('now', 'start of month')
+    GROUP BY attendance_type
+  `);
+
+  const byType = {
+    office: 0,
+    wfh: 0,
+    clientSite: 0,
+    fieldWork: 0
+  };
+
+  for (const row of typeRows) {
+    if (row.type === 'office') byType.office = row.count;
+    if (row.type === 'wfh') byType.wfh = row.count;
+    if (row.type === 'client_site') byType.clientSite = row.count;
+    if (row.type === 'field_work') byType.fieldWork = row.count;
+  }
+
+  return { daily, byType };
+}
+
 export async function getUserStats(userId: string): Promise<any> {
   const db = await getDb();
   
