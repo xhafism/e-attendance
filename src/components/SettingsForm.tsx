@@ -19,10 +19,12 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
 
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error", text: string } | null>(null);
+  const [activePolygonIndex, setActivePolygonIndex] = useState<number | null>(null);
 
   const handleSaveGeofence = async () => {
     setIsSaving(true);
     setMessage(null);
+    setActivePolygonIndex(null); // Stop drawing mode on save
     try {
       const result = await updateSettingsAction({
         geofence_enabled: geofenceEnabled.toString(),
@@ -41,7 +43,9 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
   };
 
   const addPolygonLocation = () => {
-    setLocations([...locations, { type: 'polygon', polygon: [], lat: 3.139, lng: 101.686, radius: 0, name: `Polygon ${locations.length + 1}` }]);
+    const newIdx = locations.length;
+    setLocations([...locations, { type: 'polygon', polygon: [], lat: 3.139, lng: 101.686, radius: 0, name: `Polygon ${newIdx + 1}` }]);
+    setActivePolygonIndex(newIdx);
   };
 
   const updateLocation = (index: number, field: string, value: string | number) => {
@@ -52,30 +56,24 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
 
   const removeLocation = (index: number) => {
     setLocations(locations.filter((_, i) => i !== index));
+    if (activePolygonIndex === index) {
+      setActivePolygonIndex(null);
+    } else if (activePolygonIndex !== null && activePolygonIndex > index) {
+      setActivePolygonIndex(activePolygonIndex - 1);
+    }
   };
 
   const handleMapClick = (lat: number, lng: number) => {
-    const lastLoc = locations[locations.length - 1];
-    
-    // If the last added location is a polygon, append points to it
-    if (lastLoc && lastLoc.type === 'polygon') {
-      const newLocs = [...locations];
-      newLocs[locations.length - 1] = {
-        ...lastLoc,
-        polygon: [...(lastLoc.polygon || []), { lat: parseFloat(lat.toFixed(6)), lng: parseFloat(lng.toFixed(6)) }]
-      };
-      setLocations(newLocs);
-      return;
-    }
-
-    if (window.confirm("Drop a new circle geofence pin at this location?")) {
-      setLocations([...locations, { 
-        type: 'circle',
-        lat: parseFloat(lat.toFixed(6)), 
-        lng: parseFloat(lng.toFixed(6)), 
-        radius: 100, 
-        name: `Location ${locations.length + 1}` 
-      }]);
+    if (activePolygonIndex !== null) {
+      const loc = locations[activePolygonIndex];
+      if (loc && loc.type === 'polygon') {
+        const newLocs = [...locations];
+        newLocs[activePolygonIndex] = {
+          ...loc,
+          polygon: [...(loc.polygon || []), { lat: parseFloat(lat.toFixed(6)), lng: parseFloat(lng.toFixed(6)) }]
+        };
+        setLocations(newLocs);
+      }
     }
   };
 
@@ -110,11 +108,11 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
           <div className="locations-list">
             <h4 style={{ marginBottom: '1rem' }}>Office Locations</h4>
             <p className="text-muted mb-4" style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
-              Tip: Click anywhere on the map to drop a new Circle pin. To draw an area, add a Polygon Geofence first, then click on the map to draw its points! You can drag any points to adjust them.
+              Tip: Drag pins on the map to adjust locations. For polygon areas, click "Draw Points" on the polygon to enable adding points by clicking on the map.
             </p>
             
             {locations.map((loc, i) => (
-              <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: '1rem', marginBottom: '1rem', alignItems: 'end', background: 'var(--bg-secondary)', padding: '1rem', borderRadius: 'var(--radius)' }}>
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: '1rem', marginBottom: '1rem', alignItems: 'end', background: activePolygonIndex === i ? 'var(--bg-secondary-hover, #e2e8f0)' : 'var(--bg-secondary)', padding: '1rem', borderRadius: 'var(--radius)', border: activePolygonIndex === i ? '2px solid var(--primary-color)' : '2px solid transparent' }}>
                 <div className="form-group" style={{ margin: 0 }}>
                   <label className="form-label">{loc.type === 'polygon' ? 'Polygon Name' : 'Name'}</label>
                   <input type="text" className="form-control" value={loc.name} onChange={e => updateLocation(i, 'name', e.target.value)} />
@@ -122,8 +120,16 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
                 
                 {loc.type === 'polygon' ? (
                   <div style={{ gridColumn: 'span 3', alignSelf: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-                    <strong>{loc.polygon?.length || 0}</strong> points drawn. Click on the map to add points.
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                    <strong>{loc.polygon?.length || 0}</strong> points drawn. 
+                    {activePolygonIndex === i ? <span style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}> Click map to add points!</span> : ""}
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                      <button 
+                        className={`btn ${activePolygonIndex === i ? 'btn-primary' : 'btn-secondary'}`}
+                        style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem' }}
+                        onClick={() => setActivePolygonIndex(activePolygonIndex === i ? null : i)}
+                      >
+                        {activePolygonIndex === i ? 'Stop Drawing' : 'Draw Points'}
+                      </button>
                       <button 
                         className="btn btn-secondary" 
                         style={{ padding: '0.2rem 0.5rem', fontSize: '0.8rem' }}
