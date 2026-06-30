@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { AttendanceLog, AttendanceType, ClockState, EventType } from "@/lib/types";
 import { submitAttendance } from "@/app/actions";
 import { Play, Square, Coffee, MapPin } from "lucide-react";
+import { SelfieCapture } from "./SelfieCapture";
 
 export default function ClockWidget({ initialLogs }: { initialLogs: AttendanceLog[] }) {
   const [clockState, setClockState] = useState<ClockState>("idle");
@@ -14,6 +15,10 @@ export default function ClockWidget({ initialLogs }: { initialLogs: AttendanceLo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  
+  const [showSelfie, setShowSelfie] = useState(false);
+  const [pendingEvent, setPendingEvent] = useState<EventType | null>(null);
+  const [note, setNote] = useState("");
 
   // Compute current state based on today's logs
   useEffect(() => {
@@ -58,7 +63,25 @@ export default function ClockWidget({ initialLogs }: { initialLogs: AttendanceLo
     });
   };
 
-  const handleAction = async (eventType: EventType) => {
+  const handleActionClick = (eventType: EventType) => {
+    // Show selfie capture on clock-in
+    if (eventType === "clock_in") {
+      setPendingEvent(eventType);
+      setShowSelfie(true);
+    } else {
+      executeAction(eventType, null);
+    }
+  };
+
+  const handleSelfieCapture = (photoUrl: string) => {
+    setShowSelfie(false);
+    if (pendingEvent) {
+      executeAction(pendingEvent, photoUrl);
+      setPendingEvent(null);
+    }
+  };
+
+  const executeAction = async (eventType: EventType, photoUrl: string | null) => {
     setIsSubmitting(true);
     setErrorMsg(null);
     setSuccessMsg(null);
@@ -86,16 +109,15 @@ export default function ClockWidget({ initialLogs }: { initialLogs: AttendanceLo
         latitude: lat,
         longitude: lng,
         address: null, // Reverse geocoding not implemented yet
-        note: null,
-        photoUrl: null
+        note: note || null,
+        photoUrl: photoUrl
       });
 
       if (result.status === "error") {
         setErrorMsg(result.message || "An error occurred");
       } else {
         setSuccessMsg(result.message || "Success");
-        // State will update via server component re-render passing down new initialLogs, 
-        // but we can optimistically update:
+        setNote(""); // clear note
         if (eventType === "clock_in" || eventType === "break_end") setClockState("working");
         if (eventType === "break_start") setClockState("on_break");
         if (eventType === "clock_out") setClockState("idle");
@@ -118,54 +140,81 @@ export default function ClockWidget({ initialLogs }: { initialLogs: AttendanceLo
 
       {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
       {successMsg && <div className="alert alert-success">{successMsg}</div>}
-      {locationError && <div className="alert alert-warning">Location warning: {locationError}. Your clock-in will be marked as outside geofence if required.</div>}
-
+      
+      {showSelfie && (
+        <SelfieCapture 
+          onCapture={handleSelfieCapture} 
+          onCancel={() => { setShowSelfie(false); setPendingEvent(null); }} 
+        />
+      )}
+      
+      <div className="form-group">
+        <label className="form-label">Location Type</label>
+        <select 
+          className="form-control" 
+          value={attendanceType} 
+          onChange={(e) => setAttendanceType(e.target.value as AttendanceType)}
+          disabled={clockState !== "idle"}
+        >
+          <option value="office">Office</option>
+          <option value="wfh">Work from Home</option>
+          <option value="client_site">Client Site</option>
+          <option value="field_work">Field Work</option>
+        </select>
+      </div>
+      
+      <div className="form-group">
+        <label className="form-label">Note (Optional)</label>
+        <input 
+          type="text" 
+          className="form-control" 
+          placeholder="E.g., Client meeting" 
+          value={note} 
+          onChange={(e) => setNote(e.target.value)} 
+          disabled={isSubmitting || isLocating}
+        />
+      </div>
+      
+      <div className="location-status" style={{ marginBottom: "1rem" }}>
+        {isLocating ? (
+          <span style={{ color: "var(--text-muted)" }}>Locating...</span>
+        ) : locationError ? (
+          <span style={{ color: "var(--danger-color)" }}>Location error: {locationError}</span>
+        ) : location ? (
+          <span style={{ color: "var(--success-color)", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+            <MapPin size={16}/> GPS verified
+          </span>
+        ) : null}
+      </div>
+      
       <div className="clock-actions">
         {clockState === "idle" && (
-          <div className="action-group clock-in-group">
-            <div className="form-group type-selector">
-              <label className="form-label">Work Location Type</label>
-              <select 
-                className="form-control"
-                value={attendanceType}
-                onChange={(e) => setAttendanceType(e.target.value as AttendanceType)}
-                disabled={isSubmitting || isLocating}
-              >
-                <option value="office">Office</option>
-                <option value="wfh">Work from Home</option>
-                <option value="client_site">Client Site</option>
-                <option value="field_work">Field Work</option>
-              </select>
-            </div>
-            
-            <button 
-              className="btn btn-primary btn-block clock-btn"
-              onClick={() => handleAction("clock_in")}
-              disabled={isSubmitting || isLocating}
-            >
-              <Play size={20} />
-              {isLocating ? "Locating..." : "Clock In"}
-            </button>
-          </div>
+          <button 
+            className="btn btn-primary btn-block clock-btn" 
+            onClick={() => handleActionClick("clock_in")} 
+            disabled={isSubmitting || isLocating}
+          >
+            <Play size={20} /> Clock In
+          </button>
         )}
-
+        
         {clockState === "working" && (
           <div className="action-group working-group">
             <button 
               className="btn btn-warning btn-block clock-btn"
-              onClick={() => handleAction("break_start")}
+              onClick={() => handleActionClick("break_start")}
               disabled={isSubmitting || isLocating}
             >
               <Coffee size={20} />
-              {isLocating ? "Locating..." : "Take Break"}
+              Take Break
             </button>
             <button 
               className="btn btn-danger btn-block clock-btn"
-              onClick={() => handleAction("clock_out")}
+              onClick={() => handleActionClick("clock_out")}
               disabled={isSubmitting || isLocating}
             >
               <Square size={20} />
-              {isLocating ? "Locating..." : "Clock Out"}
+              Clock Out
             </button>
           </div>
         )}
@@ -174,11 +223,11 @@ export default function ClockWidget({ initialLogs }: { initialLogs: AttendanceLo
           <div className="action-group break-group">
             <button 
               className="btn btn-primary btn-block clock-btn"
-              onClick={() => handleAction("break_end")}
+              onClick={() => handleActionClick("break_end")}
               disabled={isSubmitting || isLocating}
             >
               <Play size={20} />
-              {isLocating ? "Locating..." : "Resume Work"}
+              Resume Work
             </button>
           </div>
         )}
