@@ -51,10 +51,23 @@ export async function submitAttendance(data: {
         if (data.latitude === null || data.longitude === null) {
           isOutsideGeofence = true;
         } else {
-          // Check if within any location's radius
+          // Check if within any location's radius or polygon
           const isWithinAny = locations.some(loc => {
-            const dist = getDistanceInMeters(data.latitude!, data.longitude!, loc.lat, loc.lng);
-            return dist <= loc.radius;
+            if (loc.type === 'polygon' && loc.polygon && loc.polygon.length >= 3) {
+              let inside = false;
+              for (let i = 0, j = loc.polygon.length - 1; i < loc.polygon.length; j = i++) {
+                let xi = loc.polygon[i].lat, yi = loc.polygon[i].lng;
+                let xj = loc.polygon[j].lat, yj = loc.polygon[j].lng;
+                
+                let intersect = ((yi > data.longitude!) != (yj > data.longitude!))
+                    && (data.latitude! < (xj - xi) * (data.longitude! - yi) / (yj - yi) + xi);
+                if (intersect) inside = !inside;
+              }
+              return inside;
+            } else {
+              const dist = getDistanceInMeters(data.latitude!, data.longitude!, loc.lat, loc.lng);
+              return dist <= loc.radius;
+            }
           });
           
           isOutsideGeofence = !isWithinAny;

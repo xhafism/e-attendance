@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Circle, Polygon, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -29,6 +29,8 @@ interface MapViewProps {
     lng: number;
     radius: number;
     name: string;
+    type?: 'circle' | 'polygon';
+    polygon?: Array<{lat: number, lng: number}>;
   }>;
   onMapClick?: (lat: number, lng: number) => void;
   editableGeofences?: boolean;
@@ -47,8 +49,45 @@ function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: numbe
 }
 
 function EditableGeofence({ fence, index, onChange }: { fence: any, index: number, onChange: (i: number, f: any) => void }) {
+  if (fence.type === 'polygon') {
+    const pts = fence.polygon || [];
+    const positions = pts.map((p: any) => [p.lat, p.lng] as [number, number]);
+    return (
+      <>
+        {positions.length > 0 && (
+          <Polygon 
+            positions={positions} 
+            pathOptions={{ color: 'var(--info-color)', fillColor: 'var(--info-color)', fillOpacity: 0.1 }}
+          >
+            <Popup>{fence.name}</Popup>
+          </Polygon>
+        )}
+        
+        {pts.map((pt: any, ptIdx: number) => (
+          <Marker 
+            key={ptIdx}
+            position={[pt.lat, pt.lng]} 
+            draggable={true} 
+            eventHandlers={{
+              dragend: (e) => {
+                const pos = e.target.getLatLng();
+                const newPoly = [...pts];
+                newPoly[ptIdx] = { lat: parseFloat(pos.lat.toFixed(6)), lng: parseFloat(pos.lng.toFixed(6)) };
+                
+                // also update main lat/lng to be center of polygon roughly (optional)
+                onChange(index, { ...fence, polygon: newPoly });
+              }
+            }}
+          >
+            <Popup>Drag to move point {ptIdx + 1}</Popup>
+          </Marker>
+        ))}
+      </>
+    );
+  }
+
+  // Circle mode
   const R = 6378137;
-  // Calculate edge longitude directly east of the center
   const dLng = (fence.radius / R) * (180 / Math.PI) / Math.cos(fence.lat * Math.PI / 180);
   const edgeLng = fence.lng + dLng;
 
@@ -62,7 +101,6 @@ function EditableGeofence({ fence, index, onChange }: { fence: any, index: numbe
         <Popup>{fence.name} ({fence.radius}m)</Popup>
       </Circle>
 
-      {/* Center Marker (Move) */}
       <Marker 
         position={[fence.lat, fence.lng]} 
         draggable={true} 
@@ -76,7 +114,6 @@ function EditableGeofence({ fence, index, onChange }: { fence: any, index: numbe
         <Popup>Drag to move {fence.name}</Popup>
       </Marker>
 
-      {/* Edge Marker (Resize) */}
       <Marker 
         position={[fence.lat, edgeLng]} 
         draggable={true} 
@@ -114,14 +151,24 @@ export default function MapComponent({ markers, geofences, onMapClick, editableG
           editableGeofences && onGeofenceChange ? (
             <EditableGeofence key={i} index={i} fence={fence} onChange={onGeofenceChange} />
           ) : (
-            <Circle
-              key={i}
-              center={[fence.lat, fence.lng]}
-              radius={fence.radius}
-              pathOptions={{ color: 'var(--info-color)', fillColor: 'var(--info-color)', fillOpacity: 0.1 }}
-            >
-              <Popup>{fence.name} ({fence.radius}m)</Popup>
-            </Circle>
+            fence.type === 'polygon' && fence.polygon && fence.polygon.length > 0 ? (
+              <Polygon
+                key={i}
+                positions={fence.polygon.map(p => [p.lat, p.lng])}
+                pathOptions={{ color: 'var(--info-color)', fillColor: 'var(--info-color)', fillOpacity: 0.1 }}
+              >
+                <Popup>{fence.name}</Popup>
+              </Polygon>
+            ) : (
+              <Circle
+                key={i}
+                center={[fence.lat, fence.lng]}
+                radius={fence.radius}
+                pathOptions={{ color: 'var(--info-color)', fillColor: 'var(--info-color)', fillOpacity: 0.1 }}
+              >
+                <Popup>{fence.name} ({fence.radius}m)</Popup>
+              </Circle>
+            )
           )
         )}
 

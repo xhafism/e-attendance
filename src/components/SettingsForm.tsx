@@ -34,8 +34,12 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
     }
   };
 
-  const addLocation = () => {
-    setLocations([...locations, { lat: 3.139, lng: 101.686, radius: 100, name: "New Office" }]);
+  const addCircleLocation = () => {
+    setLocations([...locations, { type: 'circle', lat: 3.139, lng: 101.686, radius: 100, name: `Location ${locations.length + 1}` }]);
+  };
+
+  const addPolygonLocation = () => {
+    setLocations([...locations, { type: 'polygon', polygon: [], lat: 3.139, lng: 101.686, radius: 0, name: `Polygon ${locations.length + 1}` }]);
   };
 
   const updateLocation = (index: number, field: string, value: string | number) => {
@@ -49,8 +53,22 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
   };
 
   const handleMapClick = (lat: number, lng: number) => {
-    if (window.confirm("Drop a new geofence pin at this location?")) {
+    const lastLoc = locations[locations.length - 1];
+    
+    // If the last added location is a polygon, append points to it
+    if (lastLoc && lastLoc.type === 'polygon') {
+      const newLocs = [...locations];
+      newLocs[locations.length - 1] = {
+        ...lastLoc,
+        polygon: [...(lastLoc.polygon || []), { lat: parseFloat(lat.toFixed(6)), lng: parseFloat(lng.toFixed(6)) }]
+      };
+      setLocations(newLocs);
+      return;
+    }
+
+    if (window.confirm("Drop a new circle geofence pin at this location?")) {
       setLocations([...locations, { 
+        type: 'circle',
         lat: parseFloat(lat.toFixed(6)), 
         lng: parseFloat(lng.toFixed(6)), 
         radius: 100, 
@@ -90,36 +108,51 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
           <div className="locations-list">
             <h4 style={{ marginBottom: '1rem' }}>Office Locations</h4>
             <p className="text-muted mb-4" style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
-              Tip: Click anywhere on the map to drop a new pin. You can also drag existing pins to move them, or drag their edge markers to resize the radius!
+              Tip: Click anywhere on the map to drop a new Circle pin. To draw an area, add a Polygon Geofence first, then click on the map to draw its points! You can drag any points to adjust them.
             </p>
             
             {locations.map((loc, i) => (
-              <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: '1rem', marginBottom: '1rem', alignItems: 'end' }}>
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: '1rem', marginBottom: '1rem', alignItems: 'end', background: 'var(--bg-secondary)', padding: '1rem', borderRadius: 'var(--radius)' }}>
                 <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">Name</label>
+                  <label className="form-label">{loc.type === 'polygon' ? 'Polygon Name' : 'Name'}</label>
                   <input type="text" className="form-control" value={loc.name} onChange={e => updateLocation(i, 'name', e.target.value)} />
                 </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">Latitude</label>
-                  <input type="number" step="0.0001" className="form-control" value={loc.lat} onChange={e => updateLocation(i, 'lat', parseFloat(e.target.value))} />
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">Longitude</label>
-                  <input type="number" step="0.0001" className="form-control" value={loc.lng} onChange={e => updateLocation(i, 'lng', parseFloat(e.target.value))} />
-                </div>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label">Radius (m)</label>
-                  <input type="number" className="form-control" value={loc.radius} onChange={e => updateLocation(i, 'radius', parseInt(e.target.value))} />
-                </div>
+                
+                {loc.type === 'polygon' ? (
+                  <div style={{ gridColumn: 'span 3', alignSelf: 'center', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                    <strong>{loc.polygon?.length || 0}</strong> points drawn. Click on the map to add more points. Drag points on the map to adjust them.
+                  </div>
+                ) : (
+                  <>
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label">Latitude</label>
+                      <input type="number" step="0.0001" className="form-control" value={loc.lat} onChange={e => updateLocation(i, 'lat', parseFloat(e.target.value))} />
+                    </div>
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label">Longitude</label>
+                      <input type="number" step="0.0001" className="form-control" value={loc.lng} onChange={e => updateLocation(i, 'lng', parseFloat(e.target.value))} />
+                    </div>
+                    <div className="form-group" style={{ margin: 0 }}>
+                      <label className="form-label">Radius (m)</label>
+                      <input type="number" className="form-control" value={loc.radius} onChange={e => updateLocation(i, 'radius', parseInt(e.target.value))} />
+                    </div>
+                  </>
+                )}
+                
                 <button className="btn btn-danger" onClick={() => removeLocation(i)} style={{ padding: '0.5rem' }}>
                   <Trash2 size={20} />
                 </button>
               </div>
             ))}
             
-            <button className="btn btn-secondary" onClick={addLocation} style={{ marginBottom: '1.5rem' }}>
-              <Plus size={16} style={{ marginRight: '0.5rem' }} /> Add Location Manually
-            </button>
+            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
+              <button className="btn btn-secondary" onClick={addCircleLocation}>
+                <Plus size={16} style={{ marginRight: '0.5rem' }} /> Add Circle
+              </button>
+              <button className="btn btn-secondary" onClick={addPolygonLocation}>
+                <Plus size={16} style={{ marginRight: '0.5rem' }} /> Add Polygon Area
+              </button>
+            </div>
 
             <div style={{ marginBottom: '1.5rem' }}>
               <MapView 

@@ -51,6 +51,8 @@ export interface GeofenceLocation {
   lat: number;
   lng: number;
   radius: number;
+  type?: 'circle' | 'polygon';
+  polygon?: Array<{lat: number, lng: number}>;
 }
 
 export interface DailyAttendanceSummary {
