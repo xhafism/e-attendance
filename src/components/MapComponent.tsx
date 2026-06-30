@@ -38,6 +38,7 @@ interface MapViewProps {
   onGeofenceChange?: (index: number, newFence: any) => void;
   showPath?: boolean;
   height?: string;
+  autoLocate?: boolean;
 }
 
 function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: number) => void }) {
@@ -48,6 +49,22 @@ function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: numbe
       }
     }
   });
+  return null;
+}
+
+function AutoLocateControl({ enabled }: { enabled: boolean }) {
+  const map = useMapEvents({
+    locationfound(e) {
+      map.flyTo(e.latlng, map.getZoom());
+    }
+  });
+  
+  useEffect(() => {
+    if (enabled) {
+      map.locate();
+    }
+  }, [map, enabled]);
+
   return null;
 }
 
@@ -71,7 +88,7 @@ function getMarkerColor(eventType?: string) {
   }
 }
 
-function ResetViewControl({ center, zoom }: { center: [number, number], zoom: number }) {
+function ResetViewControl({ center, zoom, autoLocate }: { center: [number, number], zoom: number, autoLocate?: boolean }) {
   const map = useMapEvents({});
   return (
     <div className="leaflet-top leaflet-right" style={{ pointerEvents: 'auto', marginTop: '10px', marginRight: '10px' }}>
@@ -79,12 +96,16 @@ function ResetViewControl({ center, zoom }: { center: [number, number], zoom: nu
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          map.setView(center, zoom);
+          if (autoLocate) {
+            map.locate();
+          } else {
+            map.setView(center, zoom);
+          }
         }}
         className="btn btn-secondary"
         style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', background: 'white', color: '#333', border: '2px solid rgba(0,0,0,0.2)', cursor: 'pointer' }}
       >
-        Reset Area
+        {autoLocate ? "Find My Location" : "Reset Area"}
       </button>
     </div>
   );
@@ -197,7 +218,7 @@ function EditableGeofence({ fence, index, onChange }: { fence: any, index: numbe
   );
 }
 
-export default function MapComponent({ markers, geofences, onMapClick, editableGeofences, onGeofenceChange, showPath, height = "400px" }: MapViewProps) {
+export default function MapComponent({ markers, geofences, onMapClick, editableGeofences, onGeofenceChange, showPath, height = "400px", autoLocate = false }: MapViewProps) {
   const defaultCenter: [number, number] = markers.length > 0
     ? [markers[markers.length - 1].lat, markers[markers.length - 1].lng]
     : geofences.length > 0 
@@ -210,7 +231,8 @@ export default function MapComponent({ markers, geofences, onMapClick, editableG
   return (
     <div style={{ height: height, width: "100%", borderRadius: "var(--radius)", overflow: "hidden", border: "1px solid var(--border-color)", zIndex: 0 }}>
       <MapContainer center={defaultCenter} zoom={13} style={{ height: "100%", width: "100%", zIndex: 1 }}>
-        <ResetViewControl center={defaultCenter} zoom={13} />
+        <ResetViewControl center={defaultCenter} zoom={13} autoLocate={autoLocate} />
+        <AutoLocateControl enabled={autoLocate} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

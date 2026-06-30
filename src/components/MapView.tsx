@@ -24,6 +24,7 @@ interface MapViewProps {
   onGeofenceChange?: (index: number, newFence: any) => void;
   showPath?: boolean;
   height?: string;
+  autoLocate?: boolean;
 }
 
 const MapComponent = dynamic(() => import("./MapComponent"), { 

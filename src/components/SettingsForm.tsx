@@ -194,6 +194,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
                 editableGeofences={true}
                 onGeofenceChange={handleGeofenceChange}
                 height="600px"
+                autoLocate={locations.length === 0}
               />
             </div>
           </div>

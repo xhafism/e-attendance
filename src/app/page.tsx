@@ -1,12 +1,14 @@
 import { requireUser } from "@/lib/auth";
-import { getUserAttendanceToday, getSettings, getGeofenceSettings, getUserStats } from "@/lib/store";
+import { getUserAttendanceToday, getSettings, getGeofenceSettings, getUserStats, getUserYearlyLogs } from "@/lib/store";
 import ClockWidget from "@/components/ClockWidget";
 import { ClockoutReminder } from "@/components/ClockoutReminder";
 import { MapView } from "@/components/MapView";
+import { ContributionGraph } from "@/components/ContributionGraph";
 
 export default async function DashboardPage() {
   const user = await requireUser();
   const todayLogs = await getUserAttendanceToday(user.id);
+  const yearlyLogs = await getUserYearlyLogs(user.id);
   const settings = await getSettings();
   const geofenceConfig = await getGeofenceSettings();
   const myStats = await getUserStats(user.id);
@@ -90,6 +92,11 @@ export default async function DashboardPage() {
                 ))}
               </div>
             )}
+          </div>
+          
+          <div className="card mt-4">
+            <h3 className="card-title">Attendance History</h3>
+            <ContributionGraph logs={yearlyLogs} requiredHours={settings.required_hours ? parseFloat(settings.required_hours) : 9} />
           </div>
         </div>
         

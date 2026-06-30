@@ -301,6 +301,20 @@ export async function getUserStats(userId: string): Promise<any> {
   };
 }
 
+export async function getUserYearlyLogs(userId: string): Promise<AttendanceLog[]> {
+  const db = await getDb();
+  
+  const query = `
+    SELECT * FROM attendance_logs 
+    WHERE user_id = ? 
+      AND created_at >= date('now', '-365 days')
+    ORDER BY created_at ASC
+  `;
+  
+  const rows = await db.all<any>(query, [userId]);
+  return rows.map(mapAttendanceLogRow);
+}
+
 function mapAttendanceLogRow(row: any): AttendanceLog {
   const createdAt = row.created_at.includes('T') 
     ? row.created_at 
