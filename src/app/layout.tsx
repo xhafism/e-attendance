@@ -28,14 +28,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <LayoutDashboard className="nav-icon" size={20} />
                 <span>Dashboard</span>
               </a>
-              <a href="/map" className="nav-item">
-                <Map className="nav-icon" size={20} />
-                <span>Live Map</span>
-              </a>
-              
               {(user.role === "admin" || user.role === "hr") && (
                 <>
                   <div className="nav-group-title">Admin</div>
+                  <a href="/admin" className="nav-item">
+                    <LayoutDashboard className="nav-icon" size={20} />
+                    <span>Analytics</span>
+                  </a>
+                  <a href="/admin/map" className="nav-item">
+                    <Map className="nav-icon" size={20} />
+                    <span>Live Map</span>
+                  </a>
+                  <a href="/admin/logs" className="nav-item">
+                    <Clock className="nav-icon" size={20} />
+                    <span>All Logs</span>
+                  </a>
                   <a href="/admin/users" className="nav-item">
                     <Users className="nav-icon" size={20} />
                     <span>Users</span>
