@@ -14,10 +14,15 @@ let dbInstance: DatabaseClient | null = null;
 let dbInitPromise: Promise<DatabaseClient> | null = null;
 
 async function initializeDb(): Promise<DatabaseClient> {
-  const isCloudflare = !!process.env.CF_PAGES || !!process.env.NEXT_PHASE?.includes("production-build");
+  const isDev = process.env.NODE_ENV === "development";
+  const isBuild = process.env.NEXT_PHASE === "phase-production-build" || process.env.npm_lifecycle_event === "build";
   const forceLocal = process.env.EATTENDANCE_FORCE_LOCAL_DB === "1";
+  const forceD1 = process.env.EATTENDANCE_FORCE_D1 === "1";
   
-  if (!isCloudflare || forceLocal) {
+  // Use local if building, forcing local, or (in dev unless forcing D1)
+  const useLocal = isBuild || forceLocal || (isDev && !forceD1);
+  
+  if (useLocal) {
     // Local SQLite setup
     const dbPath = path.resolve(process.cwd(), "data", "attendance.sqlite");
     
