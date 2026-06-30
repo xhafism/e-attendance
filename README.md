@@ -4,16 +4,42 @@ A modern, fast, and secure open-source employee attendance portal. This applicat
 
 Originally built for enterprise use, this repository has been sanitized and generalized for public use.
 
-## Features
+## ✨ Key Features
 
-- **Microsoft Entra ID (Azure AD) Authentication:** Secure single sign-on (SSO) integration using the official Microsoft MSAL node flow.
-- **Geofencing & Location Tracking:** 
-  - Restricts clock-ins to predefined office locations (using circles or complex polygons).
-  - Flags "Outside Geofence" attempts automatically.
-  - Interactive map in Settings allows HR to easily draw and adjust allowed zones.
-- **Live Activity Map:** A real-time dashboard for administrators to view where employees clocked in or went on break, complete with a visual path history.
-- **Comprehensive Analytics:** Live statistical dashboards for tracking attendance types (WFH, Office, Client Site, Field Work).
-- **Excel Exports:** Advanced filtering allowing administrators to generate custom `.xlsx` reports by date range and specific users.
+- **🔐 Microsoft Entra ID (Azure AD) Single Sign-On:** 
+  - Secure, enterprise-grade authentication using the official Microsoft MSAL node flow.
+  - Automatically provisions users upon their first login.
+  - Role-based access control (Admin, HR, User) based on configured emails.
+
+- **📸 Face Capture & Verification:**
+  - Integrated camera support to capture a live photo of the employee when logging attendance.
+  - Ensures proof of presence and prevents buddy-punching.
+  - Photos are securely stored and viewable by HR in the logs dashboard.
+
+- **📍 Advanced Geofencing & Location Tracking:** 
+  - Restricts or flags clock-ins based on physical location.
+  - Interactive Map interface in Settings allows administrators to draw complex polygons or circular geofences.
+  - Automatically calculates distance and flags "Outside Geofence" attempts in real-time.
+  - Captures high-accuracy GPS coordinates for every transaction (Clock In, Clock Out, Break Start, Break End).
+
+- **🗺️ Live Activity & Tracking Map:** 
+  - A real-time geospatial dashboard for administrators.
+  - View exact locations where employees clocked in or went on break.
+  - Features visual path tracing to map an employee's movement throughout the workday.
+  - Custom color-coded map markers for different activity types.
+
+- **📊 Comprehensive Analytics Dashboard:** 
+  - Live statistical breakdowns tracking attendance categories (WFH, Office, Client Site, Field Work).
+  - Daily active user trends mapped over a 7-day rolling window.
+  - Automated anomaly detection highlighting out-of-bounds geofence warnings.
+
+- **📑 Smart Export & Reporting:** 
+  - Export attendance logs directly to Microsoft Excel (`.xlsx`) format.
+  - Advanced filtering allows administrators to generate custom reports bounded by specific date ranges and individual users.
+
+- **🎨 Modern "Square UI" Design:**
+  - Premium, responsive frontend utilizing modern CSS variables and glassmorphism.
+  - Mobile-first approach ensures the app works flawlessly on employee smartphones.
 
 ## Tech Stack
 
@@ -103,6 +129,3 @@ export CLOUDFLARE_ACCOUNT_ID="your-cloudflare-account-id"
 pnpm run cf:deploy
 ```
 
-## Security & Privacy
-
-This repository does **not** contain any hardcoded secrets. All sensitive keys (like Client Secrets and JWT signing keys) are loaded securely at runtime via environment variables. It is 100% safe for open-source use.
