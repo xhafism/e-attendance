@@ -1,6 +1,14 @@
+import type { Viewport } from "next";
 import "./index.css";
 import { getCurrentUser } from "@/lib/auth";
 import { Clock, Map, Settings, Users, LogOut, LayoutDashboard } from "lucide-react";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
@@ -73,8 +81,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </aside>
           
           <main className="main-content">
-            <header className="top-header">
+            <header className="top-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
               <h2 className="page-title">Attendance Portal</h2>
+              <a href="/api/auth/logout" className="mobile-logout-btn" style={{ display: 'none', color: 'var(--danger-color)' }}>
+                <LogOut size={20} />
+              </a>
             </header>
             <div className="content-wrapper">
               {children}
