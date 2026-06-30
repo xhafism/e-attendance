@@ -61,6 +61,13 @@ const GEOFENCE_COLORS = [
 function EditableGeofence({ fence, index, onChange }: { fence: any, index: number, onChange: (i: number, f: any) => void }) {
   const color = GEOFENCE_COLORS[index % GEOFENCE_COLORS.length];
   
+  const vertexIcon = L.divIcon({
+    className: 'custom-vertex-icon',
+    html: `<div style="width: 12px; height: 12px; background: white; border: 3px solid ${color}; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.3);"></div>`,
+    iconSize: [12, 12],
+    iconAnchor: [6, 6]
+  });
+  
   if (fence.type === 'polygon') {
     const pts = fence.polygon || [];
     const positions = pts.map((p: any) => [p.lat, p.lng] as [number, number]);
@@ -79,6 +86,7 @@ function EditableGeofence({ fence, index, onChange }: { fence: any, index: numbe
           <Marker 
             key={ptIdx}
             position={[pt.lat, pt.lng]} 
+            icon={vertexIcon}
             draggable={true} 
             eventHandlers={{
               dragend: (e) => {
@@ -126,6 +134,7 @@ function EditableGeofence({ fence, index, onChange }: { fence: any, index: numbe
 
       <Marker 
         position={[fence.lat, fence.lng]} 
+        icon={vertexIcon}
         draggable={true} 
         eventHandlers={{
           dragend: (e) => {
@@ -139,6 +148,7 @@ function EditableGeofence({ fence, index, onChange }: { fence: any, index: numbe
 
       <Marker 
         position={[fence.lat, edgeLng]} 
+        icon={vertexIcon}
         draggable={true} 
         eventHandlers={{
           dragend: (e) => {
