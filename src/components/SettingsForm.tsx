@@ -48,6 +48,17 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
     setLocations(locations.filter((_, i) => i !== index));
   };
 
+  const handleMapClick = (lat: number, lng: number) => {
+    if (window.confirm("Drop a new geofence pin at this location?")) {
+      setLocations([...locations, { 
+        lat: parseFloat(lat.toFixed(6)), 
+        lng: parseFloat(lng.toFixed(6)), 
+        radius: 100, 
+        name: `Location ${locations.length + 1}` 
+      }]);
+    }
+  };
+
   return (
     <div className="settings-container">
       {message && (
@@ -72,6 +83,9 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
         {geofenceEnabled && (
           <div className="locations-list">
             <h4 style={{ marginBottom: '1rem' }}>Office Locations</h4>
+            <p className="text-muted mb-4" style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>
+              Tip: You can click anywhere on the map below to easily drop a new location pin!
+            </p>
             
             {locations.map((loc, i) => (
               <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr auto', gap: '1rem', marginBottom: '1rem', alignItems: 'end' }}>
@@ -98,11 +112,11 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
             ))}
             
             <button className="btn btn-secondary" onClick={addLocation} style={{ marginBottom: '1.5rem' }}>
-              <Plus size={16} style={{ marginRight: '0.5rem' }} /> Add Location
+              <Plus size={16} style={{ marginRight: '0.5rem' }} /> Add Location Manually
             </button>
 
             <div style={{ marginBottom: '1.5rem' }}>
-              <MapView markers={[]} geofences={locations} />
+              <MapView markers={[]} geofences={locations} onMapClick={handleMapClick} />
             </div>
           </div>
         )}

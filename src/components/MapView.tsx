@@ -18,6 +18,7 @@ interface MapViewProps {
     radius: number;
     name: string;
   }>;
+  onMapClick?: (lat: number, lng: number) => void;
 }
 
 const MapComponent = dynamic(() => import("./MapComponent"), { 

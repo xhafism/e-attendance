@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -30,9 +30,21 @@ interface MapViewProps {
     radius: number;
     name: string;
   }>;
+  onMapClick?: (lat: number, lng: number) => void;
 }
 
-export default function MapComponent({ markers, geofences }: MapViewProps) {
+function MapClickHandler({ onMapClick }: { onMapClick?: (lat: number, lng: number) => void }) {
+  useMapEvents({
+    click(e) {
+      if (onMapClick) {
+        onMapClick(e.latlng.lat, e.latlng.lng);
+      }
+    }
+  });
+  return null;
+}
+
+export default function MapComponent({ markers, geofences, onMapClick }: MapViewProps) {
   const defaultCenter: [number, number] = geofences.length > 0 
     ? [geofences[0].lat, geofences[0].lng] 
     : [3.139, 101.686]; // KL
@@ -44,6 +56,8 @@ export default function MapComponent({ markers, geofences }: MapViewProps) {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        
+        <MapClickHandler onMapClick={onMapClick} />
         
         {geofences.map((fence, i) => (
           <Circle
