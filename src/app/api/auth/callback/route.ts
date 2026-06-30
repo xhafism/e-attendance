@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   const clientId = process.env.MICROSOFT_CLIENT_ID || "556e4561-38a4-4607-a86f-10c54da66f99";
   const tenantId = process.env.MICROSOFT_TENANT_ID || "873d6357-a4ee-4e66-a928-0a973dcd8c67";
   const clientSecret = process.env.MICROSOFT_CLIENT_SECRET;
-  const redirectUri = process.env.MICROSOFT_REDIRECT_URI || "http://localhost:3000/api/auth/callback";
+  const redirectUri = process.env.MICROSOFT_REDIRECT_URI || `${url.origin}/api/auth/callback`;
 
   if (!clientSecret) {
     console.warn("MICROSOFT_CLIENT_SECRET is missing. OAuth will fail in production.");

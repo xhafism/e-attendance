@@ -11,14 +11,12 @@
     "directory": ".open-next/assets"
   },
   "observability": { "enabled": true },
-  "routes": [
-    { "pattern": "attendance.iiumholdings.com.my", "custom_domain": true }
-  ],
+
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "e-attendance-prod",
-      "database_id": "REPLACE_WITH_ACTUAL_D1_ID",
+      "database_id": "1933a063-36ca-4e15-adaf-9c9dfa4cfe7d",
       "remote": true
     }
   ]
