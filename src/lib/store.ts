@@ -1,5 +1,5 @@
 import { getDb } from "./db";
-import { User, UserRole, Setting, GeofenceLocation } from "./types";
+import { User, UserRole, Setting, GeofenceLocation, AttendanceLog } from "./types";
 
 export async function getUsers(): Promise<User[]> {
   const db = await getDb();
@@ -68,5 +68,123 @@ export async function getGeofenceSettings(): Promise<{ enabled: boolean; locatio
   return {
     enabled: settings.geofence_enabled === 'true',
     locations,
+  };
+}
+
+// --- Attendance ---
+
+export async function logAttendance(log: Omit<AttendanceLog, "id" | "createdAt">): Promise<void> {
+  const db = await getDb();
+  const id = `log-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+  
+  await db.run(
+    `INSERT INTO attendance_logs 
+     (id, user_id, event_type, attendance_type, latitude, longitude, address, note, photo_url, is_outside_geofence) 
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      log.userId,
+      log.eventType,
+      log.attendanceType,
+      log.latitude ?? null,
+      log.longitude ?? null,
+      log.address ?? null,
+      log.note ?? null,
+      log.photoUrl ?? null,
+      log.isOutsideGeofence ? 1 : 0
+    ]
+  );
+}
+
+export async function getUserAttendanceToday(userId: string): Promise<AttendanceLog[]> {
+  const db = await getDb();
+  const todayStart = new Date();
+  todayStart.setUTCHours(0, 0, 0, 0);
+  
+  const rows = await db.all<any>(
+    "SELECT * FROM attendance_logs WHERE user_id = ? AND created_at >= ? ORDER BY created_at ASC",
+    [userId, todayStart.toISOString()]
+  );
+  
+  return rows.map(mapAttendanceLogRow);
+}
+
+export async function getAttendanceHistory(userId: string, limit: number = 50): Promise<AttendanceLog[]> {
+  const db = await getDb();
+  const rows = await db.all<any>(
+    "SELECT * FROM attendance_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT ?",
+    [userId, limit]
+  );
+  
+  return rows.map(mapAttendanceLogRow);
+}
+
+export async function getAllAttendance(date?: string): Promise<(AttendanceLog & { user: Pick<User, "name" | "email"> })[]> {
+  const db = await getDb();
+  
+  let query = `
+    SELECT a.*, u.name as user_name, u.email as user_email 
+    FROM attendance_logs a
+    JOIN users u ON a.user_id = u.id
+  `;
+  const params: any[] = [];
+  
+  if (date) {
+    // date should be YYYY-MM-DD
+    query += " WHERE date(a.created_at) = date(?)";
+    params.push(date);
+  }
+  
+  query += " ORDER BY a.created_at DESC";
+  
+  const rows = await db.all<any>(query, params);
+  return rows.map((row) => ({
+    ...mapAttendanceLogRow(row),
+    user: {
+      name: row.user_name,
+      email: row.user_email
+    }
+  }));
+}
+
+export async function getAttendanceStats(date?: string): Promise<any> {
+  const db = await getDb();
+  
+  const targetDate = date || new Date().toISOString().split('T')[0];
+  
+  // Basic stats for the given date
+  const statsRow = await db.one<any>(
+    `SELECT 
+      COUNT(DISTINCT CASE WHEN event_type = 'clock_in' THEN user_id END) as clockedIn,
+      COUNT(DISTINCT CASE WHEN event_type = 'break_start' THEN user_id END) - 
+      COUNT(DISTINCT CASE WHEN event_type = 'break_end' THEN user_id END) as onBreak,
+      COUNT(DISTINCT CASE WHEN event_type = 'clock_in' AND attendance_type = 'wfh' THEN user_id END) as wfh,
+      SUM(CASE WHEN is_outside_geofence = 1 THEN 1 ELSE 0 END) as geofenceWarnings
+     FROM attendance_logs
+     WHERE date(created_at) = date(?)`,
+    [targetDate]
+  );
+  
+  return {
+    clockedIn: statsRow?.clockedIn || 0,
+    onBreak: statsRow?.onBreak || 0,
+    wfh: statsRow?.wfh || 0,
+    geofenceWarnings: statsRow?.geofenceWarnings || 0,
+  };
+}
+
+function mapAttendanceLogRow(row: any): AttendanceLog {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    eventType: row.event_type,
+    attendanceType: row.attendance_type,
+    latitude: row.latitude,
+    longitude: row.longitude,
+    address: row.address,
+    note: row.note,
+    photoUrl: row.photo_url,
+    isOutsideGeofence: row.is_outside_geofence === 1,
+    createdAt: row.created_at,
   };
 }
