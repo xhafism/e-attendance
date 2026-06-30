@@ -586,3 +586,48 @@ tbody tr:hover {
   font-size: 0.875rem;
   padding-bottom: 0.5rem;
 }
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+  
+  .sidebar-nav {
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+  
+  .sidebar-nav a {
+    white-space: nowrap;
+    padding: 0.5rem 1rem;
+  }
+  
+  .main-content {
+    padding: 1rem;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .clock-actions {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-wrapper {
+    overflow-x: auto;
+  }
+}
