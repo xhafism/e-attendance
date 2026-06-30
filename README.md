@@ -2,7 +2,7 @@
 
 A modern, fast, and secure open-source employee attendance portal. This application allows employees to log their attendance (Clock In, Clock Out, Breaks) and includes advanced features like geofencing to ensure location-based compliance. 
 
-Originally built for enterprise use, this repository has been sanitized and generalized for public use.
+Originally built for enterprise use on Cloudflare, this repository is fully decoupled and database-agnostic. It can be easily deployed to your own server, Docker, or Vercel, and supports traditional databases like PostgreSQL or MySQL using Drizzle ORM.
 
 ## ✨ Key Features
 
@@ -118,7 +118,7 @@ pnpm dev
 ```
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-### 5. Deployment
+### 5. Deployment (Cloudflare)
 
 Deployments to Cloudflare are handled via the OpenNext adapter. 
 
@@ -128,4 +128,39 @@ Before deploying, ensure you have set your `CLOUDFLARE_ACCOUNT_ID` environment v
 export CLOUDFLARE_ACCOUNT_ID="your-cloudflare-account-id"
 pnpm run cf:deploy
 ```
+
+## 🏗️ Hosting on Your Own Server (No Cloudflare Required)
+
+This project is built on Next.js and Drizzle ORM, which means **Cloudflare is completely optional**. You can host this application on any standard Node.js server (VPS, AWS EC2, DigitalOcean), Docker container, or platform like Vercel, Render, or Railway.
+
+### Using Your Preferred Database (PostgreSQL / MySQL)
+
+Because this project uses Drizzle ORM, switching from Cloudflare D1 to a traditional database like **PostgreSQL** or **MySQL** is extremely straightforward.
+
+1. **Install the required database driver:**
+   ```bash
+   # For PostgreSQL:
+   pnpm add pg
+   pnpm add -D @types/pg
+   ```
+
+2. **Update the Drizzle config (`drizzle.config.ts`):**
+   Change the dialect to `postgresql` and provide your database URL connection string.
+
+3. **Update Database Connection (`src/lib/db.ts`):**
+   Replace the D1 specific code with standard PostgreSQL connection logic:
+   ```typescript
+   import { drizzle } from 'drizzle-orm/node-postgres';
+   import { Pool } from 'pg';
+   
+   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+   export const getDb = async () => drizzle(pool);
+   ```
+
+4. **Build and Deploy as a Standard Next.js App:**
+   Once your database is configured, you can build and start the application normally without any Cloudflare dependencies:
+   ```bash
+   pnpm build
+   pnpm start
+   ```
 
