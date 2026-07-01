@@ -60,6 +60,13 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+html {
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* Base Styles */
@@ -97,17 +104,22 @@ a:hover {
 .app-container {
   display: flex;
   min-height: 100vh;
+  width: 100%;
 }
 
 .main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  width: 100%;
 }
 
 .content-wrapper {
   padding: 2.5rem 2rem;
   flex: 1;
+  width: 100%;
+  max-width: 100%;
 }
 
 /* Components */
@@ -115,9 +127,12 @@ a:hover {
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
+  padding: 1.5rem;
   box-shadow: var(--shadow);
-  padding: 1.75rem;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .card:hover {
@@ -784,6 +799,12 @@ tbody tr:hover {
 
   .content-wrapper {
     padding: 1rem;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
   
   .dashboard-grid {

@@ -160,8 +160,8 @@ export function ContributionGraph({ logs, requiredHours = 9 }: ContributionGraph
   const stride = cellSize + cellGap;
 
   return (
-    <div className="contribution-graph-container" style={{ position: 'relative', marginTop: '1rem' }}>
-      <div style={{ display: 'flex', overflowX: 'auto', paddingBottom: '1rem', msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+    <div className="contribution-graph-container" style={{ position: 'relative', marginTop: '1rem', width: '100%', maxWidth: '100%' }}>
+      <div style={{ display: 'flex', overflowX: 'auto', paddingBottom: '1rem', msOverflowStyle: 'none', scrollbarWidth: 'none', width: '100%' }}>
         <svg
           width={grid.weeks.length * stride + 20}
           height={20 + 7 * stride}
