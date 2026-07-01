@@ -61,7 +61,19 @@ function AutoLocateControl({ enabled }: { enabled: boolean }) {
   
   useEffect(() => {
     if (enabled) {
-      map.locate();
+      // First try with Leaflet's built in locate
+      map.locate({ enableHighAccuracy: true, timeout: 10000, setView: false });
+      
+      // Fallback: If Leaflet fails or takes too long, try native geolocation
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          map.flyTo([position.coords.latitude, position.coords.longitude], 16);
+        },
+        (error) => {
+          console.warn("Native geolocation error:", error);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
     }
   }, [map, enabled]);
 
@@ -97,7 +109,16 @@ function ResetViewControl({ center, zoom, autoLocate }: { center: [number, numbe
           e.preventDefault();
           e.stopPropagation();
           if (autoLocate) {
-            map.locate();
+            map.locate({ enableHighAccuracy: true, timeout: 10000, setView: false });
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                map.flyTo([position.coords.latitude, position.coords.longitude], 16);
+              },
+              (error) => {
+                console.warn("Native geolocation error:", error);
+              },
+              { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
           } else {
             map.setView(center, zoom);
           }
