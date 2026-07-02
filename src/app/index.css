@@ -3,48 +3,38 @@
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  /* Square UI Theme Colors (Minimalist Monochrome) */
-  --bg-primary: #ffffff;
-  --bg-secondary: #ffffff;
-  --bg-tertiary: #f4f4f5;
+  --primary-color: #10b981; /* Emerald Green */
+  --primary-hover: #059669;
+  --secondary-color: rgba(255, 255, 255, 0.1);
+  --secondary-hover: rgba(255, 255, 255, 0.15);
   
-  --text-primary: #18181b;
-  --text-secondary: #52525b;
-  --text-muted: #a1a1aa;
+  --bg-color: #0f1115; /* Obsidian dark background */
+  --bg-primary: rgba(30, 32, 38, 0.6); /* Translucent cards */
+  --bg-secondary: #1a1d24;
   
-  --border-color: #e4e4e7;
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-border: rgba(255, 255, 255, 0.08);
   
-  --primary-color: #18181b; /* Almost Black */
-  --primary-hover: #3f3f46;
-  --primary-light: #f4f4f5;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
   
-  --danger-color: #ef4444;
-  --danger-hover: #dc2626;
+  --border-color: rgba(255, 255, 255, 0.1);
   
   --success-color: #10b981;
-  --success-hover: #059669;
-
+  --danger-color: #ef4444;
   --warning-color: #f59e0b;
-  --warning-hover: #d97706;
-
   --info-color: #3b82f6;
-  --info-hover: #2563eb;
   
-  /* Typography */
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  
-  /* Square UI Border Radius (0.625rem) */
-  --radius-sm: 6px;
-  --radius: 10px;
-  --radius-lg: 10px;
-  --radius-xl: 14px;
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 16px;
   --radius-full: 9999px;
   
-  /* Smooth Shadows - Square UI prefers borders and subtle shadows */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow: 0 4px 12px rgba(0,0,0,0.5);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
+  --glow: 0 0 20px rgba(16, 185, 129, 0.2);
 }
 
 * {
@@ -54,14 +44,15 @@
 }
 
 body {
-  font-family: var(--font-family);
-  background-color: var(--bg-secondary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
   color: var(--text-primary);
+  margin: 0;
+  padding: 0;
   line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-  width: 100%;
+  background-image: radial-gradient(circle at top center, rgba(16, 185, 129, 0.05) 0%, rgba(15, 17, 21, 1) 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
 }
 
 html {
@@ -128,20 +119,25 @@ a:hover {
 
 /* Components */
 .card {
-  background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  background-color: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   box-shadow: var(--shadow);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
   width: 100%;
+  min-width: 0;
   max-width: 100%;
+  overflow-wrap: break-word;
   box-sizing: border-box;
 }
 
 .card:hover {
-  box-shadow: var(--shadow-md);
   transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .btn {
