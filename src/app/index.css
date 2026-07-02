@@ -350,7 +350,7 @@ table {
   border-collapse: collapse;
 }
 
-.table th {
+th {
   padding: 1rem;
   text-align: left;
   border-bottom: 1px solid var(--glass-border);
@@ -361,7 +361,7 @@ table {
   letter-spacing: 0.05em;
 }
 
-.table td {
+td {
   padding: 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   vertical-align: middle;
