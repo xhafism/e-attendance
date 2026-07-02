@@ -5,21 +5,21 @@
 :root {
   --primary-color: #10b981; /* Emerald Green */
   --primary-hover: #059669;
-  --secondary-color: rgba(255, 255, 255, 0.1);
-  --secondary-hover: rgba(255, 255, 255, 0.15);
+  --secondary-color: rgba(0, 0, 0, 0.05);
+  --secondary-hover: rgba(0, 0, 0, 0.08);
   
-  --bg-color: #0f1115; /* Obsidian dark background */
-  --bg-primary: rgba(30, 32, 38, 0.6); /* Translucent cards */
-  --bg-secondary: #1a1d24;
+  --bg-color: #f8fafc; /* Very light slate background */
+  --bg-primary: rgba(255, 255, 255, 0.7); /* Translucent cards */
+  --bg-secondary: #f1f5f9;
   
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 1);
   
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-primary: #0f172a; /* Dark slate text */
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
   
-  --border-color: rgba(255, 255, 255, 0.1);
+  --border-color: rgba(0, 0, 0, 0.08);
   
   --success-color: #10b981;
   --danger-color: #ef4444;
@@ -32,10 +32,10 @@
   --radius-xl: 24px;
   --radius-full: 9999px;
   
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
-  --shadow: 0 4px 12px rgba(0,0,0,0.5);
-  --shadow-lg: 0 10px 25px rgba(0,0,0,0.5);
-  --glow: 0 0 20px rgba(16, 185, 129, 0.2);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.1);
+  --glow: 0 0 20px rgba(16, 185, 129, 0.3);
 }
 
 * {
@@ -150,7 +150,7 @@ a:hover {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
   padding: 1.5rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07), inset 0 1px 0 rgba(255, 255, 255, 1);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
   width: 100%;
   min-width: 0;
@@ -161,8 +161,8 @@ a:hover {
 
 .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 12px 48px rgba(31, 38, 135, 0.12), inset 0 1px 0 rgba(255, 255, 255, 1);
+  border-color: rgba(255, 255, 255, 1);
 }
 
 .btn {
@@ -217,8 +217,8 @@ a:hover {
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
 }
 
 .btn-danger {
@@ -388,7 +388,7 @@ th {
 
 td {
   padding: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
 }
 
@@ -776,7 +776,7 @@ tbody tr:hover {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--bg-primary);
   color: var(--text-primary);
   display: flex;
   align-items: center;
@@ -852,7 +852,7 @@ tbody tr:hover {
   letter-spacing: 0.05em;
   color: var(--text-muted);
   font-weight: 700;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-color);
   margin-bottom: 0.25rem;
 }
 
@@ -870,7 +870,7 @@ tbody tr:hover {
 }
 
 .admin-menu-item:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--bg-primary);
   color: var(--text-primary);
 }
 
