@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./index.css";
 import { getCurrentUser } from "@/lib/auth";
-import { Clock, Map, Settings, Users, LogOut, LayoutDashboard } from "lucide-react";
+import { Clock, LogOut } from "lucide-react";
+import { AdminFloatingMenu } from "@/components/AdminFloatingMenu";
 
 export const metadata: Metadata = {
   title: "e-attendance",
@@ -47,15 +48,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
             <div className="nav-links">
               <a href="/" className="nav-item">Dashboard</a>
-              {(user.role === "admin" || user.role === "hr") && (
-                <>
-                  <a href="/admin" className="nav-item">Analytics</a>
-                  <a href="/admin/map" className="nav-item">Map</a>
-                  <a href="/admin/logs" className="nav-item">Logs</a>
-                  <a href="/admin/users" className="nav-item">Users</a>
-                  <a href="/admin/settings" className="nav-item">Settings</a>
-                </>
-              )}
             </div>
             <div className="nav-user">
               <div className="user-avatar">{user.name.charAt(0).toUpperCase()}</div>
@@ -70,6 +62,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               {children}
             </div>
           </main>
+          
+          {(user.role === "admin" || user.role === "hr") && <AdminFloatingMenu />}
         </div>
       </body>
     </html>
