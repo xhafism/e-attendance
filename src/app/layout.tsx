@@ -39,69 +39,33 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body>
-        <div className="app-container">
-          <aside className="sidebar">
-            <div className="sidebar-header">
-              <Clock className="logo-icon" />
-              <span className="logo-text">e-attendance</span>
+        <div className="app-container top-nav-layout">
+          <nav className="floating-nav">
+            <div className="nav-brand">
+              <Clock className="nav-logo" size={24} />
+              <span className="nav-title">e-attendance</span>
             </div>
-            
-            <nav className="sidebar-nav">
-              <a href="/" className="nav-item">
-                <LayoutDashboard className="nav-icon" size={20} />
-                <span>Dashboard</span>
-              </a>
+            <div className="nav-links">
+              <a href="/" className="nav-item">Dashboard</a>
               {(user.role === "admin" || user.role === "hr") && (
                 <>
-                  <div className="nav-group-title">Admin</div>
-                  <a href="/admin" className="nav-item">
-                    <LayoutDashboard className="nav-icon" size={20} />
-                    <span>Analytics</span>
-                  </a>
-                  <a href="/admin/map" className="nav-item">
-                    <Map className="nav-icon" size={20} />
-                    <span>Live Map</span>
-                  </a>
-                  <a href="/admin/logs" className="nav-item">
-                    <Clock className="nav-icon" size={20} />
-                    <span>All Logs</span>
-                  </a>
-                  <a href="/admin/users" className="nav-item">
-                    <Users className="nav-icon" size={20} />
-                    <span>Users</span>
-                  </a>
-                  <a href="/admin/settings" className="nav-item">
-                    <Settings className="nav-icon" size={20} />
-                    <span>Settings</span>
-                  </a>
+                  <a href="/admin" className="nav-item">Analytics</a>
+                  <a href="/admin/map" className="nav-item">Map</a>
+                  <a href="/admin/logs" className="nav-item">Logs</a>
+                  <a href="/admin/users" className="nav-item">Users</a>
+                  <a href="/admin/settings" className="nav-item">Settings</a>
                 </>
               )}
-            </nav>
-            
-            <div className="sidebar-footer">
-              <div className="user-profile">
-                <div className="user-avatar">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="user-info">
-                  <div className="user-name">{user.name}</div>
-                  <div className="user-email">{user.email}</div>
-                </div>
-              </div>
-              <a href="/api/auth/logout" className="logout-btn">
-                <LogOut size={16} />
-                <span>Logout</span>
-              </a>
             </div>
-          </aside>
-          
-          <main className="main-content">
-            <header className="top-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-              <h2 className="page-title">Attendance Portal</h2>
-              <a href="/api/auth/logout" className="mobile-logout-btn" style={{ display: 'none', color: 'var(--danger-color)' }}>
+            <div className="nav-user">
+              <div className="user-avatar">{user.name.charAt(0).toUpperCase()}</div>
+              <a href="/api/auth/logout" className="logout-icon-btn" title="Logout">
                 <LogOut size={20} />
               </a>
-            </header>
+            </div>
+          </nav>
+          
+          <main className="main-content">
             <div className="content-wrapper">
               {children}
             </div>
