@@ -560,6 +560,12 @@ tbody tr:hover {
   gap: 1.5rem;
 }
 
+.main-column, .side-column {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
 @media (min-width: 992px) {
   .dashboard-grid {
     grid-template-columns: 2fr 1fr;
