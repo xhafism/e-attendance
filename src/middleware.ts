@@ -15,7 +15,8 @@ export function middleware(request: NextRequest) {
   }
 
   const sessionToken = request.cookies.get("eattendance_session")?.value;
-  const sharedSession = request.cookies.get("iiumh_session")?.value;
+  const sharedCookieName = process.env.SHARED_COOKIE_NAME || "eattendance_shared_session";
+  const sharedSession = request.cookies.get(sharedCookieName)?.value;
   
   if (!sessionToken && !sharedSession) {
     return NextResponse.redirect(new URL("/login", request.url));
