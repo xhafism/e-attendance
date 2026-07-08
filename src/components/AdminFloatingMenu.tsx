@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Settings, LayoutDashboard, Map, Clock, Users, Home } from "lucide-react";
+import { Settings, LayoutDashboard, Map, Clock, Users, Home, FileBarChart } from "lucide-react";
 import Link from "next/link";
 
 export function AdminFloatingMenu() {
@@ -48,6 +48,10 @@ export function AdminFloatingMenu() {
           <Link href="/admin/logs" className="admin-menu-item">
             <Clock size={18} />
             <span>Logs</span>
+          </Link>
+          <Link href="/admin/reports" className="admin-menu-item">
+            <FileBarChart size={18} />
+            <span>Reports</span>
           </Link>
           <Link href="/admin/users" className="admin-menu-item">
             <Users size={18} />

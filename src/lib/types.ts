@@ -68,3 +68,39 @@ export interface AttendanceStats {
   clockinTimes: { hour: string; count: number }[];
   weeklyTrend: { week: string; percentage: number }[];
 }
+
+export type ReportPeriod = 'daily' | 'monthly' | 'yearly';
+
+export interface StaffReportRow {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  daysPresent: number;
+  totalWorkingHours: number;
+  totalBreakHours: number;
+  totalOtHours: number;
+  averageHoursPerDay: number;
+}
+
+export interface StaffDayDetail {
+  date: string;
+  clockIn: string | null;
+  clockOut: string | null;
+  breakDuration: number;
+  workingHours: number;
+  otHours: number;
+  attendanceType: string;
+}
+
+export interface StaffDailyRow {
+  userId: string;
+  userName: string;
+  date: string;
+  attendanceType: string;
+  clockIn: string | null;
+  clockOut: string | null;
+  workingHours: number;
+  breakDuration: number;
+  otHours: number;
+}
+
