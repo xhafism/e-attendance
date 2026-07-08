@@ -6,3 +6,5 @@ data/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+.superpowers/
+docs/superpowers/
