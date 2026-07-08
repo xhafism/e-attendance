@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { StaffDailyRow, ReportPeriod } from "@/lib/types";
 import { Clock, Timer, TrendingUp, Calendar, Users, Download, ChevronRight, Search } from "lucide-react";
 import Link from "next/link";
@@ -74,6 +75,7 @@ function getTypeBadgeClass(type: string): string {
 }
 
 export function StaffReportTable({ rows, requiredHours, summary, initialPeriod, initialDate }: StaffReportTableProps) {
+  const router = useRouter();
   const [period, setPeriod] = useState<ReportPeriod>(initialPeriod);
   const [dateValue, setDateValue] = useState(initialDate);
   const [staffFilter, setStaffFilter] = useState("");
@@ -94,7 +96,7 @@ export function StaffReportTable({ rows, requiredHours, summary, initialPeriod, 
     const params = new URLSearchParams();
     params.set("period", period);
     params.set("date", dateValue);
-    window.location.href = `/admin/reports?${params.toString()}`;
+    router.push(`/admin/reports?${params.toString()}`);
   };
 
   const getPeriodLabel = () => {

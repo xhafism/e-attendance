@@ -163,3 +163,37 @@ export async function updateSettingsAction(settings: Record<string, string>): Pr
     };
   }
 }
+
+export async function adminForceClockOutAction(userId: string): Promise<FormActionState> {
+  try {
+    await requireAnyRole(["admin", "hr"]);
+    
+    // Log the force clock out
+    await logAttendance({
+      userId,
+      eventType: "clock_out",
+      attendanceType: "office", // Default fallback
+      latitude: null,
+      longitude: null,
+      address: null,
+      note: "Manual clock-out by Admin",
+      photoUrl: null,
+      isOutsideGeofence: false,
+    });
+    
+    revalidatePath("/admin/logs");
+    revalidatePath("/admin/reports");
+    return {
+      status: "success",
+      message: "User was manually clocked out.",
+      updatedAt: Date.now()
+    };
+  } catch (error: any) {
+    return {
+      status: "error",
+      message: error.message || "Failed to force clock out",
+      updatedAt: Date.now()
+    };
+  }
+}
+

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { User } from "@/lib/types";
 import { AttendanceTable } from "./AttendanceTable";
 import { Calendar, Search, Download, ChevronRight, User as UserIcon } from "lucide-react";
@@ -14,13 +15,40 @@ interface StaffLogsViewProps {
 }
 
 export function StaffLogsView({ users, selectedUserId, logs = [], period: initialPeriod, date: initialDate }: StaffLogsViewProps) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [period, setPeriod] = useState(initialPeriod);
   const [dateValue, setDateValue] = useState(initialDate);
+  const [isPending, startTransition] = useState(false); // Quick hack to avoid useTransition if not imported, wait, let's use useState
 
   const filteredUsers = users.filter((u) => u.name.toLowerCase().includes(search.toLowerCase()));
-
   const selectedUser = users.find((u) => u.id === selectedUserId);
+
+  // Check if the most recent log is a clock_in or break_start (meaning they haven't clocked out)
+  const isCurrentlyClockedIn = logs.length > 0 && 
+    (logs[0].event_type === "clock_in" || logs[0].eventType === "clock_in" || 
+     logs[0].event_type === "break_start" || logs[0].eventType === "break_start" ||
+     logs[0].event_type === "break_end" || logs[0].eventType === "break_end");
+
+  const handleForceClockOut = async () => {
+    if (!selectedUserId || !confirm("Are you sure you want to manually clock out this user?")) return;
+    try {
+      startTransition(true);
+      // We will use fetch or server action directly.
+      // Since it's easier to hit a server action via import, let's just do a dynamic import if we didn't import it at top.
+      const { adminForceClockOutAction } = await import("@/app/actions");
+      const res = await adminForceClockOutAction(selectedUserId);
+      if (res.status === "success") {
+        router.refresh();
+      } else {
+        alert(res.message);
+      }
+    } catch (e: any) {
+      alert("Error: " + e.message);
+    } finally {
+      startTransition(false);
+    }
+  };
 
   const handleApplyFilter = () => {
     if (!selectedUserId) return;
@@ -28,7 +56,7 @@ export function StaffLogsView({ users, selectedUserId, logs = [], period: initia
     params.set("user", selectedUserId);
     params.set("period", period);
     params.set("date", dateValue);
-    window.location.href = `/admin/logs?${params.toString()}`;
+    router.push(`/admin/logs?${params.toString()}`);
   };
 
   const getPeriodLabel = () => {
@@ -174,13 +202,24 @@ export function StaffLogsView({ users, selectedUserId, logs = [], period: initia
                     )}
                   </div>
 
-                  <button className="btn btn-secondary" style={{ padding: "0.4rem 1rem" }} onClick={handleApplyFilter}>
+                  <button className="btn btn-secondary" style={{ padding: "0.4rem 1rem" }} onClick={handleApplyFilter} disabled={isPending}>
                     Apply
                   </button>
                   <a href={getExportUrl()} className="btn btn-primary" style={{ padding: "0.4rem 1rem" }}>
                     <Download size={16} style={{ marginRight: "0.5rem" }} />
                     Export
                   </a>
+                  
+                  {isCurrentlyClockedIn && (
+                    <button 
+                      className="btn btn-danger" 
+                      style={{ padding: "0.4rem 1rem", marginLeft: "0.5rem" }} 
+                      onClick={handleForceClockOut}
+                      disabled={isPending}
+                    >
+                      {isPending ? "Processing..." : "Manual Clock Out"}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

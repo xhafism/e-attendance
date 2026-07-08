@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { StaffDayDetail, ReportPeriod } from "@/lib/types";
 import { ArrowLeft, Clock, Timer, TrendingUp, Calendar, Download } from "lucide-react";
 import Link from "next/link";
@@ -61,6 +62,7 @@ function getAttendanceLabel(type: string): string {
 }
 
 export function StaffDetailReport({ user, days, requiredHours, period, date }: StaffDetailReportProps) {
+  const router = useRouter();
   const [currentPeriod, setCurrentPeriod] = useState<ReportPeriod>(period);
   const [dateValue, setDateValue] = useState(date);
 
@@ -73,7 +75,7 @@ export function StaffDetailReport({ user, days, requiredHours, period, date }: S
     const params = new URLSearchParams();
     params.set("period", currentPeriod);
     params.set("date", dateValue);
-    window.location.href = `/admin/reports/${user.id}?${params.toString()}`;
+    router.push(`/admin/reports/${user.id}?${params.toString()}`);
   };
 
   const getPeriodLabel = () => {
