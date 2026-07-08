@@ -97,7 +97,11 @@ export default async function DashboardPage() {
           
           <div className="card mt-4">
             <h3 className="card-title">Attendance History</h3>
-            <ContributionGraph logs={yearlyLogs} requiredHours={settings.required_hours ? parseFloat(settings.required_hours) : 9} />
+            <ContributionGraph 
+              logs={yearlyLogs} 
+              requiredHours={settings.required_hours ? parseFloat(settings.required_hours) : 9}
+              todayDateStr={new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kuala_Lumpur" })}
+            />
           </div>
         </div>
         

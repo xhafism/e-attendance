@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { AttendanceLog } from "@/lib/types";
 
 interface ContributionGraphProps {
   logs: AttendanceLog[];
   requiredHours?: number;
+  todayDateStr?: string;
 }
 
 type DayStatus = "full" | "short" | "overtime" | "late" | "outside" | "missed";
@@ -28,8 +29,19 @@ const STATUS_LABELS: Record<DayStatus, string> = {
   missed: "No Activity",
 };
 
-export function ContributionGraph({ logs, requiredHours = 9 }: ContributionGraphProps) {
+export function ContributionGraph({ logs, requiredHours = 9, todayDateStr }: ContributionGraphProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [tooltip, setTooltip] = useState<{ x: number, y: number, text: string, visible: boolean }>({ x: 0, y: 0, text: "", visible: false });
+
+  // Use a stable client-side today date if not provided to avoid hydration mismatch
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => setIsMounted(true), []);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
+    }
+  }, [logs]);
 
   const history = useMemo(() => {
     const map: Record<string, { status: DayStatus, label: string }> = {};
@@ -103,9 +115,11 @@ export function ContributionGraph({ logs, requiredHours = 9 }: ContributionGraph
 
   // Build grid of 52 weeks x 7 days
   const grid = useMemo(() => {
-    const today = new Date();
-    // Use KL timezone for "today"
-    const klDateStr = today.toLocaleDateString("en-CA", { timeZone: "Asia/Kuala_Lumpur" });
+    let klDateStr = todayDateStr;
+    if (!klDateStr) {
+      const today = new Date();
+      klDateStr = today.toLocaleDateString("en-CA", { timeZone: "Asia/Kuala_Lumpur" });
+    }
     const endDate = new Date(klDateStr + "T00:00:00Z");
     
     const startDate = new Date(endDate);
@@ -159,9 +173,13 @@ export function ContributionGraph({ logs, requiredHours = 9 }: ContributionGraph
   const cellGap = 2;
   const stride = cellSize + cellGap;
 
+  if (!isMounted && !todayDateStr) {
+    return <div style={{ height: '120px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="spinner"></span></div>;
+  }
+
   return (
     <div className="contribution-graph-container" style={{ position: 'relative', marginTop: '1rem', width: '100%', maxWidth: '100%' }}>
-      <div style={{ display: 'flex', overflowX: 'auto', paddingBottom: '1rem', msOverflowStyle: 'none', scrollbarWidth: 'none', width: '100%' }}>
+      <div ref={scrollRef} style={{ display: 'flex', overflowX: 'auto', paddingBottom: '1rem', msOverflowStyle: 'none', scrollbarWidth: 'none', width: '100%' }}>
         <svg
           width={grid.weeks.length * stride + 20}
           height={20 + 7 * stride}
