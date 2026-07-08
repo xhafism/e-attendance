@@ -1,7 +1,7 @@
 export type UserRole = 'admin' | 'hr' | 'user';
 export type ClockState = 'idle' | 'working' | 'on_break';
 export type EventType = 'clock_in' | 'break_start' | 'break_end' | 'clock_out';
-export type AttendanceType = 'office' | 'wfh' | 'client_site' | 'field_work';
+export type AttendanceType = string;
 
 export interface User {
   id: string;

@@ -10,11 +10,14 @@ interface ClockWidgetProps {
   initialLogs: AttendanceLog[];
   requiredHours?: number;
   requireSelfie?: boolean;
+  locationTypes?: string[];
 }
 
-export default function ClockWidget({ initialLogs, requiredHours = 9, requireSelfie = true }: ClockWidgetProps) {
+export default function ClockWidget({ initialLogs, requiredHours = 9, requireSelfie = true, locationTypes = ["Office", "WFH", "Client Site", "Field Work"] }: ClockWidgetProps) {
   const [clockState, setClockState] = useState<ClockState>("idle");
-  const [attendanceType, setAttendanceType] = useState<AttendanceType>("office");
+  const [attendanceType, setAttendanceType] = useState<AttendanceType>(
+    locationTypes.length > 0 ? locationTypes[0].toLowerCase().replace(/ /g, '_') : "office"
+  );
   const [isLocating, setIsLocating] = useState(false);
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
@@ -235,10 +238,10 @@ export default function ClockWidget({ initialLogs, requiredHours = 9, requireSel
           onChange={(e) => setAttendanceType(e.target.value as AttendanceType)}
           disabled={clockState !== "idle"}
         >
-          <option value="office">Office</option>
-          <option value="wfh">Work from Home</option>
-          <option value="client_site">Client Site</option>
-          <option value="field_work">Field Work</option>
+          {locationTypes.map(type => {
+            const val = type.toLowerCase().replace(/ /g, '_');
+            return <option key={val} value={val}>{type}</option>;
+          })}
         </select>
       </div>
       

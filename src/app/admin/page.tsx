@@ -1,8 +1,8 @@
 import { requireAnyRole } from "@/lib/auth";
-import { getAttendanceStats, getMonthlyAnalytics } from "@/lib/store";
+import { getAttendanceStats, getMonthlyAnalytics, getWfhStaffList } from "@/lib/store";
 import { StatsCard } from "@/components/stats-card";
 import { DailyAttendanceChart, AttendanceTypeChart } from "@/components/charts/admin-charts";
-import { Users, Coffee, Home, AlertTriangle, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { Users, Coffee, Home, AlertTriangle, ChevronLeft, ChevronRight, Calendar, UserIcon } from "lucide-react";
 
 export default async function AdminDashboardPage({ searchParams }: { searchParams: Promise<{ date?: string }> }) {
   await requireAnyRole(["admin", "hr"]);
@@ -27,6 +27,7 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
 
   const todayStats = await getAttendanceStats(selectedDateStr);
   const monthlyData = await getMonthlyAnalytics(selectedDateStr);
+  const wfhStaff = await getWfhStaffList(selectedDateStr);
 
   return (
     <div>
@@ -68,9 +69,40 @@ export default async function AdminDashboardPage({ searchParams }: { searchParam
         <StatsCard label="Geofence Warnings" value={todayStats.geofenceWarnings} icon={AlertTriangle} color="var(--danger-color)" />
       </div>
       
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
-        <DailyAttendanceChart data={monthlyData.daily} />
-        <AttendanceTypeChart data={monthlyData.byType} />
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1.5rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <DailyAttendanceChart data={monthlyData.daily} />
+          <AttendanceTypeChart data={monthlyData.byType} />
+        </div>
+        
+        <div className="card" style={{ padding: '1.5rem', height: '100%' }}>
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Home size={18} className="text-muted" /> WFH Staff Today
+          </h2>
+          
+          {wfhStaff.length === 0 ? (
+            <div style={{ padding: '2rem 1rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+              No staff working from home.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {wfhStaff.map(staff => {
+                const time = new Date(staff.clockIn).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur' });
+                return (
+                  <div key={staff.id} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-color)' }}>
+                    <div className="report-user-avatar" style={{ width: '36px', height: '36px' }}>
+                      {staff.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{staff.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Clocked in: {time}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

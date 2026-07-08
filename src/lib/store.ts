@@ -633,3 +633,20 @@ export async function getAllStaffDailyReport(options: {
     },
   };
 }
+
+export async function getWfhStaffList(date?: string): Promise<{ id: string; name: string; email: string; clockIn: string }[]> {
+  const db = await getDb();
+  const targetDate = date || new Date().toISOString().split('T')[0];
+
+  return await db.all<any>(
+    `SELECT u.id, u.name, u.email, MIN(a.created_at) as clockIn
+     FROM users u
+     JOIN attendance_logs a ON u.id = a.user_id
+     WHERE a.event_type = 'clock_in' 
+       AND a.attendance_type = 'wfh'
+       AND date(a.created_at) = date(?)
+     GROUP BY u.id
+     ORDER BY u.name`,
+    [targetDate]
+  );
+}

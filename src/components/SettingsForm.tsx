@@ -230,7 +230,23 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
           </p>
         </div>
 
-        <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div className="form-group" style={{ marginBottom: '1.5rem', maxWidth: '300px' }}>
+          <label className="form-label">Work Shift Start Time</label>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <input 
+              type="time" 
+              className="form-control" 
+              value={initialSettings.work_shift_start || "09:00"}
+              onChange={(e) => {
+                updateSettingsAction({ work_shift_start: e.target.value }).then(() => {
+                  alert("Work shift start updated");
+                });
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
           <label className="form-label" style={{ margin: 0 }}>Require Selfie on Clock In</label>
           <label className="toggle-switch">
             <input 
@@ -244,6 +260,26 @@ export function SettingsForm({ initialSettings }: { initialSettings: Record<stri
             />
             <span className="toggle-slider"></span>
           </label>
+        </div>
+
+        <div className="form-group" style={{ marginBottom: '1.5rem', maxWidth: '400px' }}>
+          <label className="form-label">Location Types</label>
+          <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '0.5rem' }}>
+            Comma-separated list of location types users can select when clocking in.
+          </p>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', flexDirection: 'column' }}>
+            <input 
+              type="text" 
+              className="form-control" 
+              defaultValue={initialSettings.location_types || "Office, WFH, Client Site, Field Work"}
+              onBlur={(e) => {
+                updateSettingsAction({ location_types: e.target.value }).then(() => {
+                  alert("Location types updated");
+                });
+              }}
+              style={{ width: '100%' }}
+            />
+          </div>
         </div>
       </div>
     </div>

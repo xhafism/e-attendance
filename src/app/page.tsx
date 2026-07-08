@@ -61,13 +61,14 @@ export default async function DashboardPage() {
             initialLogs={todayLogs} 
             requiredHours={settings.required_hours ? parseFloat(settings.required_hours) : 9} 
             requireSelfie={settings.require_selfie !== 'false'}
+            locationTypes={settings.location_types ? settings.location_types.split(',').map(s => s.trim()).filter(Boolean) : undefined}
           />
           
           {geofenceConfig.enabled && (
             <div className="card mt-4">
               <h3 className="card-title">My Location</h3>
               <div style={{ marginTop: "1rem" }}>
-                <MapView markers={userMarkers} geofences={geofenceConfig.locations} />
+                <MapView markers={userMarkers} geofences={geofenceConfig.locations} autoLocate={true} />
               </div>
             </div>
           )}
